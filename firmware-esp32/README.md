@@ -9,17 +9,17 @@
 5. Montar pacote  
 6. Publicar telemetria  
 
-## Arquivo
+## Arquivos
 
-Só `satelite/satelite.ino`
+| Arquivo | Função |
+|---------|--------|
+| `satelite/satelite.ino` | `setup` / `loop` (só orquestra) |
+| `satelite/wifi_mod.h` / `wifi_mod.cpp` | Wi-Fi (SSID, IP fixo, conectar) |
+| `satelite/mqtt_mod.h` / `mqtt_mod.cpp` | MQTT (broker, tópicos, callback) |
 
-1. Instale **PubSubClient** (Nick O'Leary) no Arduino IDE.
-2. Confira `ssid` / `senha` (rede `teleco2k25`).
-3. Ajuste `mqtt_broker` para o IP da máquina com Mosquitto (não use o IP do ESP).
-4. Grave e abra o Serial em **115200**.
+## Como gravar
 
-Esperado: `Wi-Fi OK`, `MQTT ... OK`, inscrição em `satellite/esp32-01/command`.
-
-Tópicos (combinados com a equipe):
-- telemetria: `satellite/esp32-01/telemetry` (publicar depois)
-- comando: `satellite/esp32-01/command` (já assina)
+1. Instale **PubSubClient** (Nick O'Leary).
+2. Em `wifi_mod.cpp`: rede e IP do ESP.
+3. Em `mqtt_mod.cpp`: `mqtt_broker` = IP do Mosquitto.
+4. Abra a pasta `satelite/` no Arduino IDE, grave, Serial **115200**.

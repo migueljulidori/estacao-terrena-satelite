@@ -36,6 +36,18 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Separa módulos Wi-Fi e MQTT no firmware
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `firmware-esp32/satelite/`
+- **O que mudou:**
+  - `wifi_mod.h` / `wifi_mod.cpp` — conexão Wi-Fi e IP fixo
+  - `mqtt_mod.h` / `mqtt_mod.cpp` — broker, assinatura e callback
+  - `satelite.ino` só chama os módulos
+- **Por quê:** organização clara por etapa (Wi-Fi e MQTT separados)
+- **Como testar / impacto:** abrir pasta `satelite/` no Arduino IDE; ajustar broker em `mqtt_mod.cpp`
+
 ### 2026-11-12 — Firmware MQTT simples no .ino (integração)
 
 - **Autor(es):** Miguel Julidori (com base no MQTT inicial da equipe)
