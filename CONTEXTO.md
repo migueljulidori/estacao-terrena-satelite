@@ -96,10 +96,10 @@ Definida pela equipe; implementar **nesta ordem**, sem pular:
 
 1. **Wi-Fi** ✓ — IP fixo `192.168.30.52`
 2. **MQTT** ✓ — conectar ao broker como publisher (Miguel; sem subscribe)
-3. **Gerar dados** — telemetria bruta (pendente)
+3. **Gerar dados** ← teste `TESTE-N` via `dados_mod.h` (telemetria real depois)
 4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; pendente)
 5. **Montar pacote** — payload final ≤ 16 bytes (`docs/protocolo/`; pendente)
-6. **Publicar** — `publish` da telemetria (pendente)
+6. **Publicar** — já usado no teste (`mqttPublicar`); versão final com pacote criptografado depois
 
 ## Divisão de trabalho
 

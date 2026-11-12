@@ -36,6 +36,26 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Módulo de dados com publish de teste
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `dados_mod.h`, `mqtt_mod.h`, `satelite.ino`
+- **O que mudou:**
+  - `dados_mod.h` envia `TESTE-N` a cada 5 s
+  - `mqttPublicar` no tópico de telemetria (máx. 16 bytes)
+- **Por quê:** validar comunicação TX ESP → RX PC antes da telemetria real
+- **Como testar / impacto:** Serial mostra `TX ...`; no PC use `mosquitto_sub` no tópico telemetry
+
+### 2026-11-12 — Autenticação usuário/senha no MQTT do ESP
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `firmware-esp32/satelite/mqtt_mod.h`
+- **O que mudou:** `mqtt.connect` com `mqtt_user` e `mqtt_senha`
+- **Por quê:** broker Mosquitto exige senha
+- **Como testar / impacto:** preencher a senha real criada com `mosquitto_passwd`
+
 ### 2026-11-12 — Um arquivo por módulo (wifi / mqtt)
 
 - **Autor(es):** Miguel Julidori

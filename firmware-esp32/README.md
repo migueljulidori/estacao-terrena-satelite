@@ -4,22 +4,27 @@
 
 ESP só **TX** (publish) · PC só **RX** (subscribe)
 
-## Arquivos (3 no total)
+## Arquivos
 
 | Arquivo | Função |
 |---------|--------|
 | `satelite.ino` | `setup` / `loop` |
-| `wifi_mod.h` | todo o Wi-Fi |
-| `mqtt_mod.h` | todo o MQTT |
+| `wifi_mod.h` | Wi-Fi |
+| `mqtt_mod.h` | MQTT + `mqttPublicar` |
+| `dados_mod.h` | Monta/envia dados (agora: teste `TESTE-N`) |
 
-## Ordem
+## Agora
 
-1. Wi-Fi ✓  
-2. MQTT ← conectar (ainda sem publish)  
-3. Gerar dados → 4. Criptografia → 5. Pacote → 6. Publicar  
+A cada 5 s publica em `satellite/esp32-01/telemetry` algo como `TESTE-0`, `TESTE-1`, … (≤ 16 bytes).
 
-## Como gravar
+## Teste no PC
 
-1. PubSubClient instalado  
-2. Ajuste `mqtt_broker` em `mqtt_mod.h` (IP do PC com Mosquitto)  
-3. Abra a pasta `satelite/`, grave, Serial **115200**
+```bash
+mosquitto_sub -h 127.0.0.1 -p 1883 -u groundstation -P 'SENHA' -t 'satellite/esp32-01/telemetry' -v
+```
+
+Ou o cliente Python em `cliente-pc/`.
+
+## Configurar no ESP
+
+Em `mqtt_mod.h`: `mqtt_broker`, `mqtt_user`, `mqtt_senha`.
