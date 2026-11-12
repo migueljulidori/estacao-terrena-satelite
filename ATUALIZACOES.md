@@ -36,6 +36,18 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Modulariza o firmware Wi-Fi (.h / .cpp)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/satelite/`
+- **O que mudou:**
+  - `satelite.ino` só orquestra (`setup`/`loop`)
+  - `wifi_link.h` + `wifi_link.cpp` com a lógica Wi-Fi
+  - `config.h` com constantes; `secrets.example.h` para credenciais
+- **Por quê:** organização modular clara, sem esconder implementação só em header inline
+- **Como testar / impacto:** abrir a pasta `satelite/` no Arduino IDE; criar `secrets.h` e gravar
+
 ### 2026-11-12 — Simplifica o sketch ESP32 (Wi-Fi no .ino)
 
 - **Autor(es):** Miguel Julidori
