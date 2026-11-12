@@ -42,6 +42,7 @@ PubSubClient mqttClient(wifiClient);
 unsigned long ultimaTentativaWiFi = 0;
 unsigned long ultimaTentativaMQTT = 0;
 unsigned long ultimoStatus = 0;
+bool wifiConexaoJaInformada = false;
 
 void iniciarWiFi();
 void manterWiFiConectado();
@@ -100,8 +101,16 @@ void iniciarWiFi() {
 
 void manterWiFiConectado() {
   if (WiFi.status() == WL_CONNECTED) {
+    if (!wifiConexaoJaInformada) {
+      wifiConexaoJaInformada = true;
+      Serial.println("Wi-Fi conectado.");
+      Serial.print("IP do satelite: ");
+      Serial.println(WiFi.localIP());
+    }
     return;
   }
+
+  wifiConexaoJaInformada = false;
 
   // Se o Wi-Fi cair, o estado MQTT deixa de ser válido.
   if (mqttClient.connected()) {
@@ -116,13 +125,6 @@ void manterWiFiConectado() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   }
 
-  static bool informouConexao = false;
-  if (!informouConexao && WiFi.status() == WL_CONNECTED) {
-    informouConexao = true;
-    Serial.println("Wi-Fi conectado.");
-    Serial.print("IP do satelite: ");
-    Serial.println(WiFi.localIP());
-  }
 }
 
 void manterMQTTConectado() {
