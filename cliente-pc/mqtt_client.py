@@ -8,7 +8,6 @@ Aplicação de operação da estação terrena.
 """
 
 import sys
-import time
 import paho.mqtt.client as mqtt
 
 try:
