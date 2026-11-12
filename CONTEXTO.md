@@ -19,7 +19,8 @@ Simular uma estação terrena que se comunica com satélites (nós ESP32) por en
 | Papel | Hardware / software | Função |
 |-------|---------------------|--------|
 | Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT Mosquitto, cliente de operação |
-| Satélite | ESP32 | Publica telemetria e recebe telecomandos |
+| Satélite | ESP32 | Só **publica** telemetria (TX) |
+| Cliente PC | Computador | Só **assina** telemetria (RX) |
 | Gerência | SSH na LAN | Manutenção local (sem exposição à internet) |
 
 Rede isolada da turma — sem internet e sem dispositivos externos.
@@ -41,20 +42,19 @@ Rede isolada da turma — sem internet e sem dispositivos externos.
 
 Conteúdo típico de telemetria (exemplos do enunciado): energia, temperatura interna/externa, irradiação solar, etc.
 
-## MQTT — implementação inicial
+## MQTT — enlace unidirecional (decisão da equipe)
 
-Broker previsto: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. O IP da máquina da estação terrena ainda precisa ser definido e preenchido nos arquivos locais de configuração.
+Broker: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. IP da estação ainda a definir (`mqtt_broker` no ESP / config do cliente PC).
 
-Tópicos iniciais:
+**Fluxo:** ESP32 só **TX** (publish) → broker → PC só **RX** (subscribe). Sem telecomando / sem troca bidirecional.
 
-| Direção | Tópico |
-|---|---|
-| ESP32 → estação | `satellite/esp32-01/telemetry` |
-| Estação → ESP32 | `satellite/esp32-01/command` |
+| Direção | Papel | Tópico |
+|---|---|---|
+| ESP32 → PC | Publish (TX) | `satellite/esp32-01/telemetry` |
 
-O firmware ESP32 conecta ao broker e assina o tópico de telecomando. O cliente PC conecta, assina telemetria e permite publicar mensagens de teste no tópico de comando. Nesta etapa, mensagens recebidas são exibidas em hexadecimal; ainda não há geração de telemetria, interpretação de comandos ou publicação de dados pelo firmware.
+Etapa atual do firmware: conectar e manter MQTT. Publicação da telemetria vem na etapa 6 do pipeline.
 
-A autenticação MQTT por usuário/senha é usada para controlar acesso ao broker. A configuração inicial não habilita TLS e deve permanecer restrita à LAN isolada da turma. Essa autenticação não substitui HMAC/AES no conteúdo da aplicação.
+TLS no broker não é obrigatório nesta etapa (LAN isolada). HMAC/AES entram depois no payload da aplicação.
 
 ## Segurança (requisitos)
 
@@ -95,11 +95,11 @@ Além da comunicação, dimensionar potência da estação, latência e RTT conf
 Definida pela equipe; implementar **nesta ordem**, sem pular:
 
 1. **Wi-Fi** ✓ — IP fixo `192.168.30.52`
-2. **MQTT** ✓ — conectar ao broker e assinar telecomando (Miguel)
+2. **MQTT** ✓ — conectar ao broker como publisher (Miguel; sem subscribe)
 3. **Gerar dados** — telemetria bruta (pendente)
 4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; pendente)
 5. **Montar pacote** — payload final ≤ 16 bytes (`docs/protocolo/`; pendente)
-6. **Publicar** — envio MQTT da telemetria (pendente)
+6. **Publicar** — `publish` da telemetria (pendente)
 
 ## Divisão de trabalho
 
@@ -115,12 +115,13 @@ Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Juli
 | Broker MQTT | Mosquitto em PC Linux/Raspberry Pi |
 | IP do broker | _a definir_; no ESP: variável `mqtt_broker` no `.ino`; no PC: `mqtt_config.py` |
 | Porta MQTT | TCP 1883 (LAN isolada; sem TLS nesta etapa) |
+| Sentido do enlace | Unidirecional: ESP publish (TX), PC subscribe (RX) |
 | Tópico de telemetria | `satellite/esp32-01/telemetry` |
-| Tópico de telecomando | `satellite/esp32-01/command` |
+| Tópico de telecomando | **não usado** (sem RX no ESP) |
 | Mecanismo de autenticação de mensagem | HMAC-SHA256 (planejado; mbedTLS) |
 | Mecanismo de confidencialidade | AES-CBC (planejado; mbedTLS) |
 | Formato do payload (16 B) | _a definir_ (`docs/protocolo/`) |
-| Progresso firmware | **2/6 — Wi-Fi + MQTT (conectar/assinar)** |
+| Progresso firmware | **2/6 — Wi-Fi + MQTT connect (publish-only)** |
 
 ## Fontes
 

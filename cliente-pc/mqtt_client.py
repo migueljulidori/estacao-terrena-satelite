@@ -1,17 +1,15 @@
 """
-Cliente MQTT da estação terrena.
+Cliente MQTT da estação terrena (somente RX).
 
-Nesta etapa:
 - conecta ao Mosquitto;
-- assina o tópico de telemetria;
-- exibe mensagens recebidas em HEX;
-- permite enviar telecomandos de teste de até 16 bytes.
+- assina satellite/esp32-01/telemetry;
+- exibe mensagens em HEX.
 
-O formato/decodificação dos dados será implementado após a definição
-do protocolo em docs/protocolo/.
+O ESP32 só publica (TX). Este PC só recebe (RX). Sem telecomando.
 """
 
 import sys
+import time
 import paho.mqtt.client as mqtt
 
 try:
@@ -26,7 +24,7 @@ def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print(f"Conectado ao broker {config.BROKER_HOST}:{config.BROKER_PORT}")
         client.subscribe(config.TOPIC_TELEMETRY, qos=0)
-        print(f"Inscrito em: {config.TOPIC_TELEMETRY}")
+        print(f"Inscrito (RX) em: {config.TOPIC_TELEMETRY}")
     else:
         print(f"Falha na conexao MQTT. Codigo: {reason_code}")
 
@@ -66,28 +64,12 @@ def main():
         sys.exit(1)
 
     client.loop_start()
+    print("Cliente RX pronto. Aguardando telemetria do ESP (Ctrl+C para sair).")
 
-    print("\nCliente pronto.")
-    print("Digite um telecomando de teste (ate 16 bytes) e pressione Enter.")
-    print("Digite /sair para encerrar.")
     try:
         while True:
-            command = input("> ")
-            if command.strip() == "/sair":
-                break
-
-            payload = command.encode("utf-8")
-            if len(payload) > config.MAX_PAYLOAD_BYTES:
-                print(f"Mensagem rejeitada: {len(payload)} bytes. Limite: 16.")
-                continue
-
-            info = client.publish(config.TOPIC_COMMAND, payload, qos=0, retain=False)
-            info.wait_for_publish()
-            if info.rc == mqtt.MQTT_ERR_SUCCESS:
-                print(f"Telecomando enviado ({len(payload)} byte(s)).")
-            else:
-                print(f"Falha ao publicar. Codigo: {info.rc}")
-    except (KeyboardInterrupt, EOFError):
+            time.sleep(0.5)
+    except KeyboardInterrupt:
         print("\nEncerrando...")
     finally:
         client.loop_stop()

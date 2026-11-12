@@ -7,7 +7,7 @@ O transporte definido pelo projeto é MQTT. Esta pasta deverá conter a especifi
 | Direção | Tópico |
 |---|---|
 | Satélite ESP32 → estação terrena | `satellite/esp32-01/telemetry` |
-| Estação terrena → satélite ESP32 | `satellite/esp32-01/command` |
+| ~~Estação → ESP32 (telecomando)~~ | **não usado** — enlace só ESP TX → PC RX |
 
 O identificador `esp32-01` é o identificador inicial do nó. Se a equipe definir outro ID, atualize firmware, cliente PC e esta documentação em conjunto.
 
@@ -26,4 +26,4 @@ A próxima definição deverá ser feita em conjunto com firmware e cliente PC. 
 
 ## Teste bruto
 
-Envie um conteúdo de até 16 bytes para `satellite/esp32-01/command`. O ESP32 deve exibir o conteúdo em hexadecimal. A interpretação semântica fica para depois da definição do protocolo.
+Quando o ESP publicar telemetria, o PC (ou `mosquitto_sub`) deve mostrar até 16 bytes em HEX no tópico `satellite/esp32-01/telemetry`.

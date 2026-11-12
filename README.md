@@ -14,10 +14,10 @@ Este repositório é compartilhado. Cada pessoa deve **assumir uma parte** e env
 
 ## Status atual
 
-- **Miguel — ESP32:** Wi-Fi + MQTT (conectar e assinar telecomando) em [`firmware-esp32/`](firmware-esp32/)
-- **Broker:** exemplos Mosquitto em `estacao-terrena/`
-- **Cliente PC:** Python em `cliente-pc/`
-- **Pendente:** IP real do broker, gerar dados, cripto, montar pacote, publicar telemetria — veja [`EQUIPE.md`](EQUIPE.md)
+- **Enlace:** ESP só **TX** (publish); PC só **RX** (subscribe) — sem telecomando
+- **Miguel — ESP32:** Wi-Fi + MQTT connect em [`firmware-esp32/`](firmware-esp32/)
+- **Broker / cliente PC:** `estacao-terrena/`, `cliente-pc/`
+- **Pendente:** IP do broker, gerar dados, cripto, pacote, publish — veja [`EQUIPE.md`](EQUIPE.md)
 
 ## Estrutura
 

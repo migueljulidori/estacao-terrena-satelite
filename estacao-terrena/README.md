@@ -41,26 +41,19 @@ Não coloque senhas reais nos arquivos versionados. O arquivo `passwd` deve perm
 
 | Direção | Tópico | Permissão |
 |---|---|---|
-| ESP32 → estação | `satellite/esp32-01/telemetry` | Usuário `satellite`: publicar; `groundstation`: assinar |
-| Estação → ESP32 | `satellite/esp32-01/command` | Usuário `groundstation`: publicar; `satellite`: assinar |
+| ESP32 → PC (TX) | `satellite/esp32-01/telemetry` | `satellite` publica; `groundstation` assina |
 
-Os tópicos são a convenção inicial desta implementação e devem ser mantidos alinhados entre firmware, cliente PC e protocolo.
+Enlace **unidirecional**: sem tópico de telecomando.
 
 ## Teste manual do broker
 
-Em um terminal, assine o tópico de telemetria:
+Assine a telemetria (RX no PC):
 
 ```bash
 mosquitto_sub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' -t 'satellite/esp32-01/telemetry' -v
 ```
 
-Em outro terminal, publique um comando de teste:
-
-```bash
-mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' -t 'satellite/esp32-01/command' -m 'PING'
-```
-
-O comando deve aparecer no Monitor Serial do ESP32 quando ele estiver conectado.
+Quando o ESP publicar (etapa 6), a mensagem aparece aqui.
 
 Evite usar `-P` com senha real em terminais compartilhados: o valor pode ficar no histórico do shell. Prefira ferramentas que solicitem a senha interativamente ou configure o cliente localmente.
 

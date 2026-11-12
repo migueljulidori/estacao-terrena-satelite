@@ -7,6 +7,5 @@ MQTT_USERNAME = "groundstation"
 MQTT_PASSWORD = "COLOQUE_A_SENHA_MQTT"
 
 CLIENT_ID = "ground-station-pc"
-TOPIC_TELEMETRY = "satellite/esp32-01/telemetry"
-TOPIC_COMMAND = "satellite/esp32-01/command"
+TOPIC_TELEMETRY = "satellite/esp32-01/telemetry"  # ESP publica; PC só assina
 MAX_PAYLOAD_BYTES = 16

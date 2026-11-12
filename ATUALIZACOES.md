@@ -36,6 +36,17 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — ESP só publish (TX); PC só subscribe (RX)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `mqtt_mod.cpp`, `CONTEXTO.md`, READMEs
+- **O que mudou:**
+  - Removidos `subscribe`, callback e tópico `command` do firmware
+  - Documentado enlace unidirecional satélite → estação
+- **Por quê:** decisão da equipe — sem troca bidirecional de dados
+- **Como testar / impacto:** ESP só conecta ao broker; publicação ainda na etapa 6; PC deve só assinar `telemetry`
+
 ### 2026-11-12 — Separa módulos Wi-Fi e MQTT no firmware
 
 - **Autor(es):** Miguel Julidori
