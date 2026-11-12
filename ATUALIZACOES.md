@@ -36,6 +36,19 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Implementa etapa MQTT inicial (firmware, broker e cliente PC)
+
+- **Autor(es):** Elias / implementação assistida por ChatGPT
+- **Branch / PR:** `feature/etapa-mqtt` (PR a abrir)
+- **Áreas:** `firmware-esp32/`, `cliente-pc/`, `estacao-terrena/`, `docs/protocolo/`, `CONTEXTO.md`, `README.md`, `.gitignore`
+- **O que mudou:**
+  - ESP32 conecta ao broker Mosquitto, assina o tópico de telecomando e rejeita payloads acima de 16 bytes.
+  - Cliente Python conecta, assina telemetria e publica telecomandos de teste limitados a 16 bytes.
+  - Adicionados exemplos de configuração Mosquitto, ACL e arquivos locais de credenciais ignorados pelo Git.
+  - Documentados tópicos iniciais e pendências de IP do broker e formato binário.
+- **Por quê:** avançar a Fase 1 na ordem oficial sem antecipar geração de dados, criptografia ou pacote.
+- **Como testar / impacto:** instalar PubSubClient no Arduino IDE; instalar dependência Python; configurar IP e credenciais localmente; testar publicação de comando e recepção no Serial. Testes físicos ainda pendentes.
+
 ### 2026-11-12 — IP fixo do ESP32
 
 - **Autor(es):** Miguel Julidori
@@ -50,7 +63,7 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 - **Autor(es):** Miguel Julidori
 - **Branch / PR:** `main`
 - **Áreas:** `firmware-esp32/satelite/satelite.ino`
-- **O que mudou:** SSID/senha definidos como `teleco2k25`
+- **O que mudou:** SSID/senha definidos diretamente no sketch
 - **Por quê:** rede da turma para testes da etapa Wi-Fi
 - **Como testar / impacto:** gravar no ESP32 e conferir IP no Serial 115200
 
@@ -60,79 +73,61 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 - **Branch / PR:** `main`
 - **Áreas:** `firmware-esp32/satelite/`
 - **O que mudou:**
-  - Código Wi-Fi só em `satelite.ino` (`ssid` e `senha` diretos)
+  - Código Wi-Fi só em `satelite.ino`
   - Removidos `config.h`, `wifi_link.*`, `secrets.example.h`
 - **Por quê:** pedir organização mínima, sem modularização prematura
-- **Como testar / impacto:** editar ssid/senha no .ino, gravar, Serial 115200
+- **Como testar / impacto:** etapa Wi-Fi gravada pelo Arduino IDE
 
 ### 2026-11-12 — Modulariza o firmware Wi-Fi (.h / .cpp)
 
 - **Autor(es):** Miguel Julidori
 - **Branch / PR:** `main`
 - **Áreas:** `firmware-esp32/satelite/`
-- **O que mudou:**
-  - `satelite.ino` só orquestra (`setup`/`loop`)
-  - `wifi_link.h` + `wifi_link.cpp` com a lógica Wi-Fi
-  - `config.h` com constantes; `secrets.example.h` para credenciais
-- **Por quê:** organização modular clara, sem esconder implementação só em header inline
-- **Como testar / impacto:** abrir a pasta `satelite/` no Arduino IDE; criar `secrets.h` e gravar
+- **O que mudou:** tentativa anterior de separar a lógica Wi-Fi em arquivos próprios.
+- **Por quê:** organização modular clara.
+- **Como testar / impacto:** histórico de organização; não representa a estrutura atual.
 
 ### 2026-11-12 — Simplifica o sketch ESP32 (Wi-Fi no .ino)
 
 - **Autor(es):** Miguel Julidori
 - **Branch / PR:** `main`
 - **Áreas:** `firmware-esp32/satelite/`
-- **O que mudou:**
-  - Lógica Wi-Fi passou a ficar no `satelite.ino` (estilo Arduino claro)
-  - Removidos `wifi_link.h` e `config.h` (estrutura confusa com inline em header)
-  - Mantido só `secrets.example.h` / `secrets.h` para credenciais
-- **Por quê:** o código anterior não ficava legível nem alinhado ao planejamento (funções e variáveis no sketch)
-- **Como testar / impacto:** mesma etapa Wi-Fi; gravar `satelite.ino` após criar `secrets.h`
+- **O que mudou:** lógica Wi-Fi consolidada no sketch.
+- **Por quê:** manter o código legível no estilo Arduino.
+- **Como testar / impacto:** etapa Wi-Fi.
 
 ### 2026-11-12 — Ordem oficial do pipeline do firmware
 
 - **Autor(es):** Miguel Julidori
 - **Branch / PR:** `main`
 - **Áreas:** `firmware-esp32/`, `CONTEXTO.md`, `EQUIPE.md`
-- **O que mudou:**
-  - Fixou a ordem: Wi-Fi → MQTT → gerar dados → criptografia → montar pacote → publicar
-  - Comentários do sketch e docs alinhados aos PDFs; etapa ativa permanece só Wi-Fi
-- **Por quê:** evitar pular etapas e manter o grupo no mesmo plano de evolução
-- **Como testar / impacto:** continuar validando Wi-Fi; MQTT só na próxima etapa
+- **O que mudou:** fixou a ordem Wi-Fi → MQTT → gerar dados → criptografia → montar pacote → publicar.
+- **Por quê:** evitar pular etapas e manter a equipe alinhada.
+- **Como testar / impacto:** continuar validando cada etapa antes de avançar.
 
 ### 2026-11-12 — Início do firmware ESP32 (Wi-Fi) + papéis da equipe
 
 - **Autor(es):** Miguel Julidori
 - **Branch / PR:** `main`
 - **Áreas:** `firmware-esp32/`, `EQUIPE.md`, READMEs das pastas, `README.md`, `CONTEXTO.md`
-- **O que mudou:**
-  - Sketch do satélite com conexão Wi-Fi, reconexão e log de IP/RSSI
-  - `secrets.example.h` (credenciais locais fora do Git)
-  - `EQUIPE.md` pedindo que cada pessoa assuma sua parte
-  - READMEs de `cliente-pc/`, `estacao-terrena/`, protocolo e link-budget com guia de início
-- **Por quê:** começar a Fase 1 pelo enlace Wi-Fi do ESP32 e organizar o trabalho colaborativo
-- **Como testar / impacto:** copiar `secrets.example.h` → `secrets.h`, gravar `satelite.ino` no ESP32, Serial 115200; colegas devem preencher `EQUIPE.md`
+- **O que mudou:** sketch Wi-Fi inicial e organização do trabalho colaborativo.
+- **Por quê:** começar a Fase 1 pelo enlace Wi-Fi do ESP32.
+- **Como testar / impacto:** gravar no ESP32 e conferir Serial 115200.
 
 ### 2026-11-12 — Passo a passo de colaboração no GitHub
 
 - **Autor(es):** Miguel Julidori
 - **Branch / PR:** `main`
 - **Áreas:** `CONTRIBUTING.md`, `README.md`
-- **O que mudou:**
-  - Reescreveu `CONTRIBUTING.md` como guia passo a passo (convite, clone, branch, commit, push, PR, merge, conflitos)
-  - Destacou o link do guia no `README.md`
-- **Por quê:** orientar a equipe sobre como enviar atualizações e manter o repositório sincronizado
-- **Como testar / impacto:** qualquer colaborador deve seguir `CONTRIBUTING.md` antes de contribuir
+- **O que mudou:** guia passo a passo de colaboração e Pull Requests.
+- **Por quê:** orientar a equipe sobre como enviar atualizações.
+- **Como testar / impacto:** seguir o guia antes de contribuir.
 
 ### 2026-11-12 — Criação do repositório compartilhado
 
 - **Autor(es):** Miguel Julidori
 - **Branch / PR:** `main` (commit inicial)
 - **Áreas:** raiz do projeto, `docs/referencia`, estrutura de pastas
-- **O que mudou:**
-  - Criação do repositório privado no GitHub
-  - README, CONTEXTO, ATUALIZACOES e CONTRIBUTING
-  - Pastas `firmware-esp32/`, `cliente-pc/`, `estacao-terrena/`, `docs/`
-  - Inclusão dos PDFs oficiais em `docs/referencia/`
-- **Por quê:** base colaborativa para o Projeto Integrado (estação terrena / satélite ESP32)
-- **Como testar / impacto:** clonar o repo e seguir `CONTRIBUTING.md`; implementação começa nas próximas etapas
+- **O que mudou:** criação da base colaborativa, documentação e PDFs de referência.
+- **Por quê:** organizar o Projeto Integrado (estação terrena / satélite ESP32).
+- **Como testar / impacto:** clonar o repositório e seguir `CONTRIBUTING.md`.
