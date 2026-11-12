@@ -1,29 +1,43 @@
-# Cliente PC (estação terrena) — precisa de responsável
+# Cliente PC (estação terrena)
 
-**Status:** pasta reservada.  
-**Ação:** quem for ficar com esta parte, coloque seu nome em [`EQUIPE.md`](../EQUIPE.md) e comece aqui.
+Base inicial de cliente MQTT para testar a comunicação com o satélite ESP32.
 
-## Objetivo
+## O que faz
 
-Programa no PC que:
+1. Conecta ao broker Mosquitto.
+2. Assina `satellite/esp32-01/telemetry`.
+3. Exibe mensagens recebidas em hexadecimal.
+4. Permite publicar telecomandos de teste em `satellite/esp32-01/command`.
+5. Impede o envio de payloads maiores que 16 bytes.
 
-1. Conecta ao **broker MQTT** da estação terrena
-2. Assina o tópico do satélite da equipe
-3. Interpreta o **payload ≤ 16 bytes**
-4. Verifica autenticidade (HMAC) e/ou descriptografa (AES)
-5. Mostra os dados e rejeita mensagens inválidas
+A interpretação dos campos, verificação HMAC e descriptografia AES dependem das próximas etapas e da definição de `docs/protocolo/`.
 
-## Como começar (sugestão)
+## Instalação
 
-1. Anote seu nome em `EQUIPE.md` (via branch + PR).
-2. Escolha a linguagem (ex.: Python + `paho-mqtt`).
-3. Crie um esqueleto que só conecta ao broker e imprime o payload bruto.
-4. Registre em `ATUALIZACOES.md` e envie o PR.
-5. Evolua junto com o protocolo (`docs/protocolo/`) e o firmware (`firmware-esp32/`).
+Na pasta `cliente-pc/`:
 
-## Dependências
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp mqtt_config.example.py mqtt_config.py
+```
 
-- Broker rodando (pasta `estacao-terrena/`)
-- Firmware publicando (Miguel — Wi-Fi já em andamento; MQTT na próxima etapa)
+Edite `mqtt_config.py` com o IP do broker e as credenciais criadas no Mosquitto.
 
-Não committe senhas ou chaves. Use arquivos `*.example`.
+## Execução
+
+```bash
+python mqtt_client.py
+```
+
+Digite uma mensagem curta para enviá-la como telecomando. O ESP32 deve exibir os bytes no Monitor Serial.
+
+Para encerrar, digite `/sair` ou pressione Ctrl+C.
+
+## Limites desta versão
+
+- O formato binário do payload ainda não foi definido.
+- O cliente não interpreta telemetria nem valida HMAC/AES.
+- O limite de 16 bytes é aplicado ao conteúdo da mensagem, sem contar cabeçalhos MQTT.
+- Use apenas na rede isolada da turma; esta configuração não habilita TLS.
