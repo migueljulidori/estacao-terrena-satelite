@@ -42,17 +42,18 @@ Rede isolada da turma — sem internet e sem dispositivos externos.
 
 Conteúdo típico de telemetria (exemplos do enunciado): energia, temperatura interna/externa, irradiação solar, etc.
 
-## MQTT — enlace unidirecional (decisão da equipe)
+## MQTT — enlace bidirecional
 
-Broker: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. IP da estação ainda a definir (`mqtt_broker` no ESP / config do cliente PC).
+Broker: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. O IP da estação ainda deve ser definido (`mqtt_broker` no firmware e `mqtt_config.py` no PC).
 
-**Fluxo:** ESP32 só **TX** (publish) → broker → PC só **RX** (subscribe). Sem telecomando / sem troca bidirecional.
+O ESP32 publica telemetria e assina comandos; a aplicação PC assina telemetria e publica comandos.
 
-| Direção | Papel | Tópico |
-|---|---|---|
-| ESP32 → PC | Publish (TX) | `satellite/esp32-01/telemetry` |
+| Direção | Publisher | Subscriber | Tópico |
+|---|---|---|---|
+| ESP32 → PC | ESP32 | PC | `satellite/esp32-01/telemetry` |
+| PC → ESP32 | PC | ESP32 | `satellite/esp32-01/command` |
 
-Etapa atual do firmware: conectar e manter MQTT. Publicação da telemetria vem na etapa 6 do pipeline.
+O payload de cada mensagem da aplicação deve ter no máximo 16 bytes. Nesta etapa, o ESP32 exibe comandos válidos no Monitor Serial, sem executar ações físicas.
 
 TLS no broker não é obrigatório nesta etapa (LAN isolada). HMAC/AES entram depois no payload da aplicação.
 
@@ -74,11 +75,12 @@ Observações: proteção contra replay quando aplicável; não basta embaralhar
 
 ## Cliente PC
 
-- Conectar ao broker MQTT da estação
-- Assinar tópico do satélite da equipe
-- Interpretar protocolo, verificar autenticidade e/ou descriptografar
-- Rejeitar mensagens inválidas
-- Exibir dados e resultado das verificações
+- Conectar ao broker MQTT da estação.
+- Assinar o tópico de telemetria do satélite.
+- Publicar comandos no tópico de telecomando.
+- Interpretar protocolo, verificar autenticidade e/ou descriptografar.
+- Rejeitar mensagens inválidas.
+- Exibir dados e resultado das verificações.
 
 ## Link budget
 
