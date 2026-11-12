@@ -39,7 +39,7 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 ### 2026-11-12 — Comunicação MQTT bidirecional entre ESP32 e estação terrena
 
 - **Autor(es):** Elias / implementação assistida
-- **Branch / PR:** `feature/mqtt-bidirecional` (PR pendente)
+- **Branch / PR:** `feature/mqtt-bidirecional` (PR #2)
 - **Áreas:** `firmware-esp32/`, `cliente-pc/`, `estacao-terrena/`, `docs/protocolo/`, `CONTEXTO.md`, `EQUIPE.md`, `README.md`
 - **O que mudou:**
   - ESP32 mantém publish de telemetria e passa a assinar o tópico de comandos.
