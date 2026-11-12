@@ -94,16 +94,16 @@ Além da comunicação, dimensionar potência da estação, latência e RTT conf
 
 Definida pela equipe; implementar **nesta ordem**, sem pular:
 
-1. **Wi-Fi** — conexão com IP fixo `192.168.30.52`
-2. **MQTT** — conexão ao broker Mosquitto e assinatura do tópico de telecomando (implementado)
+1. **Wi-Fi** ✓ — IP fixo `192.168.30.52`
+2. **MQTT** ✓ — conectar ao broker e assinar telecomando (Miguel)
 3. **Gerar dados** — telemetria bruta (pendente)
-4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; PDFs de planejamento; pendente)
+4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; pendente)
 5. **Montar pacote** — payload final ≤ 16 bytes (`docs/protocolo/`; pendente)
-6. **Publicar** — envio MQTT da telemetria no tópico do satélite (pendente)
+6. **Publicar** — envio MQTT da telemetria (pendente)
 
 ## Divisão de trabalho
 
-Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Julidori**.
+Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Julidori** — etapa 2/6 MQTT.
 
 ## Decisões da equipe
 
@@ -113,14 +113,14 @@ Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Juli
 | Órbita / banda / antena | _a definir_ |
 | Conteúdo da telemetria | _a definir_ |
 | Broker MQTT | Mosquitto em PC Linux/Raspberry Pi |
-| IP do broker | _a definir pela equipe; preencher em `secrets.h` e `mqtt_config.py` |
+| IP do broker | _a definir_; no ESP: variável `mqtt_broker` no `.ino`; no PC: `mqtt_config.py` |
 | Porta MQTT | TCP 1883 (LAN isolada; sem TLS nesta etapa) |
 | Tópico de telemetria | `satellite/esp32-01/telemetry` |
 | Tópico de telecomando | `satellite/esp32-01/command` |
 | Mecanismo de autenticação de mensagem | HMAC-SHA256 (planejado; mbedTLS) |
 | Mecanismo de confidencialidade | AES-CBC (planejado; mbedTLS) |
 | Formato do payload (16 B) | _a definir_ (`docs/protocolo/`) |
-| Progresso firmware | **2/6 — Wi-Fi + conexão/assinatura MQTT** |
+| Progresso firmware | **2/6 — Wi-Fi + MQTT (conectar/assinar)** |
 
 ## Fontes
 

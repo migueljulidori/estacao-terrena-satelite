@@ -14,11 +14,10 @@ Este repositório é compartilhado. Cada pessoa deve **assumir uma parte** e env
 
 ## Status atual
 
-- **Firmware ESP32:** Wi-Fi + conexão MQTT e assinatura do tópico de telecomando.
-- **Broker:** configuração de exemplo do Mosquitto em `estacao-terrena/`.
-- **Cliente PC:** cliente Python para assinar telemetria e enviar telecomandos de teste.
-- **Protocolo:** limite de 16 bytes aplicado; formato dos campos ainda a definir.
-- **Pendente:** IP real do broker, geração de telemetria, interpretação de comandos, HMAC/AES, montagem do pacote e publicação da telemetria.
+- **Miguel — ESP32:** Wi-Fi + MQTT (conectar e assinar telecomando) em [`firmware-esp32/`](firmware-esp32/)
+- **Broker:** exemplos Mosquitto em `estacao-terrena/`
+- **Cliente PC:** Python em `cliente-pc/`
+- **Pendente:** IP real do broker, gerar dados, cripto, montar pacote, publicar telemetria — veja [`EQUIPE.md`](EQUIPE.md)
 
 ## Estrutura
 

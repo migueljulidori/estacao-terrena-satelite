@@ -36,18 +36,29 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Firmware MQTT simples no .ino (integração)
+
+- **Autor(es):** Miguel Julidori (com base no MQTT inicial da equipe)
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/satelite/satelite.ino`
+- **O que mudou:**
+  - Sketch único: Wi-Fi + MQTT + assinatura de `satellite/esp32-01/command`
+  - SSID/senha e `mqtt_broker` diretos no `.ino` (sem `secrets.h` no firmware)
+  - Mantém limite de 16 bytes na recepção; sem publicar telemetria ainda
+- **Por quê:** etapa 2/6 com código simples alinhado ao restante do time
+- **Como testar / impacto:** PubSubClient; ajustar `mqtt_broker`; Serial `MQTT ... OK`
+
 ### 2026-11-12 — Implementa etapa MQTT inicial (firmware, broker e cliente PC)
 
 - **Autor(es):** Elias / implementação assistida por ChatGPT
-- **Branch / PR:** `feature/etapa-mqtt` (PR a abrir)
+- **Branch / PR:** `feature/etapa-mqtt`
 - **Áreas:** `firmware-esp32/`, `cliente-pc/`, `estacao-terrena/`, `docs/protocolo/`, `CONTEXTO.md`, `README.md`, `.gitignore`
 - **O que mudou:**
-  - ESP32 conecta ao broker Mosquitto, assina o tópico de telecomando e rejeita payloads acima de 16 bytes.
-  - Cliente Python conecta, assina telemetria e publica telecomandos de teste limitados a 16 bytes.
-  - Adicionados exemplos de configuração Mosquitto, ACL e arquivos locais de credenciais ignorados pelo Git.
-  - Documentados tópicos iniciais e pendências de IP do broker e formato binário.
-- **Por quê:** avançar a Fase 1 na ordem oficial sem antecipar geração de dados, criptografia ou pacote.
-- **Como testar / impacto:** instalar PubSubClient no Arduino IDE; instalar dependência Python; configurar IP e credenciais localmente; testar publicação de comando e recepção no Serial. Testes físicos ainda pendentes.
+  - ESP32 conecta ao broker Mosquitto, assina telecomando e rejeita payloads > 16 bytes
+  - Cliente Python e exemplos Mosquitto/ACL
+  - Tópicos iniciais documentados
+- **Por quê:** avançar a Fase 1 na ordem oficial
+- **Como testar / impacto:** ver READMEs de `firmware-esp32/`, `cliente-pc/` e `estacao-terrena/`
 
 ### 2026-11-12 — IP fixo do ESP32
 
