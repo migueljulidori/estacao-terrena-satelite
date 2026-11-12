@@ -1,0 +1,10 @@
+# Copie para /etc/mosquitto/acl.
+# O nome apos "user" deve corresponder ao usuario criado em mosquitto_passwd.
+
+user satellite
+topic write satellite/esp32-01/telemetry
+topic read satellite/esp32-01/command
+
+user groundstation
+topic read satellite/esp32-01/telemetry
+topic write satellite/esp32-01/command

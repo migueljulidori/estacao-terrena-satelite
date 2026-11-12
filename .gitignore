@@ -13,6 +13,7 @@ credentials.json
 !**/secrets.example.h
 **/wifi_credentials.*
 **/mqtt_credentials.*
+**/mqtt_config.py
 
 # Build / IDE
 build/

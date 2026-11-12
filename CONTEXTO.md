@@ -18,7 +18,7 @@ Simular uma estação terrena que se comunica com satélites (nós ESP32) por en
 
 | Papel | Hardware / software | Função |
 |-------|---------------------|--------|
-| Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT (ex.: Mosquitto), cliente de operação |
+| Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT Mosquitto, cliente de operação |
 | Satélite | ESP32 | Publica telemetria e recebe telecomandos |
 | Gerência | SSH na LAN | Manutenção local (sem exposição à internet) |
 
@@ -34,12 +34,27 @@ Rede isolada da turma — sem internet e sem dispositivos externos.
 ## Protocolo de comunicação (requisitos)
 
 - Transporte: **MQTT**
-- **Payload máximo: 16 bytes** por mensagem MQTT
+- **Payload máximo: 16 bytes** por mensagem MQTT (conteúdo da aplicação; cabeçalhos MQTT não fazem parte dos 16 bytes)
 - Formato livre (binário / numérico), definido pela equipe
 - Documentar: identificação do satélite, tipo de mensagem, campos, tamanhos e regras de decodificação
 - Elementos de segurança **contam** no limite de 16 bytes
 
 Conteúdo típico de telemetria (exemplos do enunciado): energia, temperatura interna/externa, irradiação solar, etc.
+
+## MQTT — implementação inicial
+
+Broker previsto: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. O IP da máquina da estação terrena ainda precisa ser definido e preenchido nos arquivos locais de configuração.
+
+Tópicos iniciais:
+
+| Direção | Tópico |
+|---|---|
+| ESP32 → estação | `satellite/esp32-01/telemetry` |
+| Estação → ESP32 | `satellite/esp32-01/command` |
+
+O firmware ESP32 conecta ao broker e assina o tópico de telecomando. O cliente PC conecta, assina telemetria e permite publicar mensagens de teste no tópico de comando. Nesta etapa, mensagens recebidas são exibidas em hexadecimal; ainda não há geração de telemetria, interpretação de comandos ou publicação de dados pelo firmware.
+
+A autenticação MQTT por usuário/senha é usada para controlar acesso ao broker. A configuração inicial não habilita TLS e deve permanecer restrita à LAN isolada da turma. Essa autenticação não substitui HMAC/AES no conteúdo da aplicação.
 
 ## Segurança (requisitos)
 
@@ -79,29 +94,33 @@ Além da comunicação, dimensionar potência da estação, latência e RTT conf
 
 Definida pela equipe; implementar **nesta ordem**, sem pular:
 
-1. **Wi-Fi** ← etapa atual (Miguel)
-2. **MQTT** — conectar ao broker da estação terrena
-3. **Gerar dados** — telemetria bruta
-4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; PDFs de planejamento)
-5. **Montar pacote** — payload final ≤ 16 bytes (`docs/protocolo/`)
-6. **Publicar** — envio MQTT no tópico do satélite
+1. **Wi-Fi** — conexão com IP fixo `192.168.30.52`
+2. **MQTT** — conexão ao broker Mosquitto e assinatura do tópico de telecomando (implementado)
+3. **Gerar dados** — telemetria bruta (pendente)
+4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; PDFs de planejamento; pendente)
+5. **Montar pacote** — payload final ≤ 16 bytes (`docs/protocolo/`; pendente)
+6. **Publicar** — envio MQTT da telemetria no tópico do satélite (pendente)
 
 ## Divisão de trabalho
 
-Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Julidori** — etapa 1/6 Wi-Fi.
+Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Julidori**.
 
-## Decisões da equipe (preencher)
+## Decisões da equipe
 
 | Item | Decisão |
 |------|---------|
 | Número da equipe | _a definir_ |
 | Órbita / banda / antena | _a definir_ |
 | Conteúdo da telemetria | _a definir_ |
-| Mecanismo de autenticação | HMAC-SHA256 (planejado; mbedTLS) |
+| Broker MQTT | Mosquitto em PC Linux/Raspberry Pi |
+| IP do broker | _a definir pela equipe; preencher em `secrets.h` e `mqtt_config.py` |
+| Porta MQTT | TCP 1883 (LAN isolada; sem TLS nesta etapa) |
+| Tópico de telemetria | `satellite/esp32-01/telemetry` |
+| Tópico de telecomando | `satellite/esp32-01/command` |
+| Mecanismo de autenticação de mensagem | HMAC-SHA256 (planejado; mbedTLS) |
 | Mecanismo de confidencialidade | AES-CBC (planejado; mbedTLS) |
 | Formato do payload (16 B) | _a definir_ (`docs/protocolo/`) |
-| Tópicos MQTT | _a definir_ |
-| Progresso firmware | **1/6 Wi-Fi** (`firmware-esp32/satelite/`) |
+| Progresso firmware | **2/6 — Wi-Fi + conexão/assinatura MQTT** |
 
 ## Fontes
 

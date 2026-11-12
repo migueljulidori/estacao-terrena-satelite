@@ -1,19 +1,73 @@
-# Estação terrena (broker e gerência) — precisa de responsável
+# Estação terrena — broker MQTT Mosquitto
 
-**Status:** pasta reservada.  
-**Ação:** quem for ficar com esta parte, coloque seu nome em [`EQUIPE.md`](../EQUIPE.md) e comece aqui.
+Esta pasta contém a configuração de referência do broker da estação terrena.
 
-## Objetivo
+## Topologia
 
-- Configurar o **broker MQTT** (ex.: Mosquitto) na máquina/Raspberry da estação
-- Documentar IP, porta e como o ESP32 e o cliente PC se conectam
-- Notas de acesso **SSH** local (sem expor senhas no Git)
+- ESP32: cliente MQTT `satellite-esp32-01`, IP fixo `192.168.30.52`.
+- PC/Raspberry Pi: executa o broker Mosquitto.
+- Porta MQTT: `1883`.
+- IP do broker: **a definir pela equipe**. Use o IP LAN real da máquina que executa o Mosquitto; não confunda com o IP do ESP32.
 
-## Como começar (sugestão)
+## Instalação (Ubuntu/Raspberry Pi OS)
 
-1. Anote seu nome em `EQUIPE.md` (via branch + PR).
-2. Documente a instalação do Mosquitto (Ubuntu/Raspberry).
-3. Crie `mosquitto.conf.example` e um `README` com IP de teste da LAN da turma.
-4. Registre em `ATUALIZACOES.md` e envie o PR.
+```bash
+sudo apt update
+sudo apt install mosquitto mosquitto-clients
+sudo systemctl enable --now mosquitto
+```
 
-O firmware (Miguel) precisa do IP/porta do broker na próxima etapa (MQTT).
+## Configuração
+
+1. Copie `mosquitto.conf.example` para `/etc/mosquitto/conf.d/estacao.conf`.
+2. Crie os usuários do broker (o terminal solicitará as senhas):
+
+```bash
+sudo mosquitto_passwd -c /etc/mosquitto/passwd satellite
+sudo mosquitto_passwd /etc/mosquitto/passwd groundstation
+```
+
+3. Copie `acl.example` para `/etc/mosquitto/acl`.
+4. Reinicie e confira o serviço:
+
+```bash
+sudo systemctl restart mosquitto
+sudo systemctl status mosquitto
+```
+
+Não coloque senhas reais nos arquivos versionados. O arquivo `passwd` deve permanecer no computador da estação e ter permissões de leitura adequadas para o serviço Mosquitto.
+
+## Tópicos iniciais
+
+| Direção | Tópico | Permissão |
+|---|---|---|
+| ESP32 → estação | `satellite/esp32-01/telemetry` | Usuário `satellite`: publicar; `groundstation`: assinar |
+| Estação → ESP32 | `satellite/esp32-01/command` | Usuário `groundstation`: publicar; `satellite`: assinar |
+
+Os tópicos são a convenção inicial desta implementação e devem ser mantidos alinhados entre firmware, cliente PC e protocolo.
+
+## Teste manual do broker
+
+Em um terminal, assine o tópico de telemetria:
+
+```bash
+mosquitto_sub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' -t 'satellite/esp32-01/telemetry' -v
+```
+
+Em outro terminal, publique um comando de teste:
+
+```bash
+mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' -t 'satellite/esp32-01/command' -m 'PING'
+```
+
+O comando deve aparecer no Monitor Serial do ESP32 quando ele estiver conectado.
+
+Evite usar `-P` com senha real em terminais compartilhados: o valor pode ficar no histórico do shell. Prefira ferramentas que solicitem a senha interativamente ou configure o cliente localmente.
+
+## Rede e segurança
+
+- Permita a porta TCP 1883 apenas na rede local isolada da equipe.
+- Não encaminhe a porta 1883 para a internet.
+- MQTT nesta configuração não usa TLS; credenciais e mensagens trafegam sem criptografia de transporte.
+- Usuário/senha do broker controlam acesso ao broker, mas **não substituem** HMAC/AES do protocolo da aplicação.
+- A segurança criptográfica das mensagens permanece como Fase 2 do projeto.
