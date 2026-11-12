@@ -1,54 +1,32 @@
 # Firmware ESP32 (satélite) — parte do Miguel
 
-Responsável: **Miguel Julidori** (`firmware-esp32/`).
+Responsável: **Miguel Julidori**.
 
-O ESP32 simula o **satélite**: entra na Wi-Fi da turma, depois usa o broker MQTT da estação terrena para enviar telemetria com segurança (planejamento HMAC/AES nos PDFs).
+## Ordem oficial
 
-## Ordem oficial (não pular etapas)
+1. **Wi-Fi** ← atual  
+2. MQTT  
+3. Gerar dados  
+4. Criptografia  
+5. Montar pacote (≤ 16 bytes)  
+6. Publicar  
 
-| # | Etapa | Status | Observação |
-|---|--------|--------|------------|
-| 1 | **Wi-Fi** | **Atual** | Conectar e manter enlace na LAN da turma |
-| 2 | MQTT | Próxima | Cliente conectado ao broker da estação |
-| 3 | Gerar dados | Depois | Telemetria (energia, temp., etc. — a definir) |
-| 4 | Criptografia | Depois | AES-CBC e/ou HMAC-SHA256 (mbedTLS) |
-| 5 | Montar pacote | Depois | Payload final ≤ **16 bytes** (protocolo da equipe) |
-| 6 | Publicar | Depois | `publish` no tópico MQTT do satélite |
+## Arquivos (etapa Wi-Fi)
 
-Alinhado ao PDF de planejamento (mensagem → proteção → montagem → publicação MQTT) e ao enunciado da Fase 1 (Wi-Fi + broker na estação, payload ≤ 16 B).
+| Arquivo | Função |
+|---------|--------|
+| `satelite/satelite.ino` | Código do satélite (Wi-Fi) |
+| `satelite/secrets.example.h` | Modelo de SSID/senha |
+| `satelite/secrets.h` | Suas credenciais (**não vai para o Git**) |
 
-## Etapa atual: Wi-Fi
-
-Código em `satelite/`: conecta, reconecta se cair, loga IP e RSSI no Serial.
-
-## Como gravar no ESP32 (Arduino IDE)
-
-1. Instale o suporte à placa **ESP32** no Arduino IDE.
-2. Credenciais locais:
+## Como gravar
 
 ```bash
 cd firmware-esp32/satelite
 cp secrets.example.h secrets.h
-# edite secrets.h com SSID e senha da rede da turma
+# edite WIFI_SSID e WIFI_PASSWORD
 ```
 
-3. Abra `satelite/satelite.ino`.
-4. Selecione a placa ESP32 e a porta serial.
-5. Compile, grave e abra o **Serial Monitor** em **115200**.
+Abra `satelite.ino` no Arduino IDE (placa ESP32), grave e use o Serial em **115200**.
 
-Esperado: `[WiFi] Conectado`, IP e RSSI a cada 5 s. Só avançamos para MQTT quando isso estiver estável.
-
-## Arquivos
-
-| Arquivo | Função |
-|---------|--------|
-| `satelite/satelite.ino` | Pipeline e etapa atual (Wi-Fi) |
-| `satelite/config.h` | Constantes (ID, tempos) |
-| `satelite/wifi_link.h` | Conectar / manter / logar Wi-Fi |
-| `satelite/secrets.example.h` | Modelo de SSID/senha |
-| `satelite/secrets.h` | Credenciais reais (**não commitadas**) |
-
-## Contexto
-
-- `CONTEXTO.md` e `docs/referencia/` (PDFs Fase 1 + planejamento HMAC/AES)
-- Colaboração: `EQUIPE.md` + `CONTRIBUTING.md` + `ATUALIZACOES.md`
+Esperado: `Wi-Fi conectado`, IP e RSSI. Só depois avançamos para MQTT.

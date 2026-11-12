@@ -36,6 +36,18 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Simplifica o sketch ESP32 (Wi-Fi no .ino)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/satelite/`
+- **O que mudou:**
+  - Lógica Wi-Fi passou a ficar no `satelite.ino` (estilo Arduino claro)
+  - Removidos `wifi_link.h` e `config.h` (estrutura confusa com inline em header)
+  - Mantido só `secrets.example.h` / `secrets.h` para credenciais
+- **Por quê:** o código anterior não ficava legível nem alinhado ao planejamento (funções e variáveis no sketch)
+- **Como testar / impacto:** mesma etapa Wi-Fi; gravar `satelite.ino` após criar `secrets.h`
+
 ### 2026-11-12 — Ordem oficial do pipeline do firmware
 
 - **Autor(es):** Miguel Julidori

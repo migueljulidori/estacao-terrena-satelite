@@ -1,59 +1,107 @@
 /*
  * Satélite simulado — ESP32
- * Projeto Integrado: Estação Terrena de Comunicação via Satélite
+ * Etapa atual: 1/6 Wi-Fi
  *
- * Ordem oficial de implementação (uma etapa por vez):
- *   1) Wi-Fi          ← etapa atual
- *   2) MQTT           (conectar ao broker da estação)
- *   3) Gerar dados    (telemetria; payload bruto ≤ 16 B no total final)
- *   4) Criptografia   (AES-CBC e/ou HMAC-SHA256 via mbedTLS — PDFs)
- *   5) Montar pacote  (dados + IV/MAC conforme protocolo da equipe)
- *   6) Publicar       (MQTT publish no tópico do satélite)
+ * Ordem: Wi-Fi → MQTT → gerar dados → criptografia → montar pacote → publicar
  *
- * Setup desta etapa (Wi-Fi):
- *   1. Copie secrets.example.h → secrets.h e preencha SSID/senha
- *   2. Abra esta pasta no Arduino IDE (placa: ESP32)
- *   3. Compile e grave; abra o Serial Monitor em 115200
+ * Antes de gravar:
+ *   cp secrets.example.h secrets.h
+ *   (edite SSID e senha)
+ * Serial Monitor: 115200
  */
 
-#include "config.h"
-#include "wifi_link.h"
+#include <WiFi.h>
+#include "secrets.h"
+
+// --- Variáveis ---
+const char *SATELITE_ID = "SAT-01";
+const unsigned long SERIAL_BAUD = 115200;
+const unsigned long WIFI_RETRY_MS = 500;
+const unsigned long STATUS_MS = 5000;
 
 unsigned long ultimoStatusMs = 0;
+
+// --- Funções da etapa Wi-Fi ---
+
+void wifiConectar() {
+  Serial.println();
+  Serial.print("Conectando ao Wi-Fi: ");
+  Serial.println(WIFI_SSID);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(WIFI_RETRY_MS);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("Wi-Fi conectado.");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("RSSI: ");
+  Serial.print(WiFi.RSSI());
+  Serial.println(" dBm");
+}
+
+void wifiManter() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  Serial.println("Wi-Fi caiu. Reconectando...");
+  WiFi.disconnect();
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  unsigned long inicio = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - inicio) < 15000) {
+    delay(WIFI_RETRY_MS);
+    Serial.print(".");
+  }
+  Serial.println();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("Reconectado. IP: ");
+    Serial.println(WiFi.localIP());
+  } else {
+    Serial.println("Ainda sem Wi-Fi. Tentamos de novo no loop.");
+  }
+}
+
+void wifiMostrarStatus() {
+  Serial.print(SATELITE_ID);
+  Serial.print(" | WiFi=");
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("OK");
+    Serial.print(" | IP=");
+    Serial.print(WiFi.localIP());
+    Serial.print(" | RSSI=");
+    Serial.print(WiFi.RSSI());
+    Serial.println(" dBm");
+  } else {
+    Serial.println("DOWN");
+  }
+}
+
+// --- Programa ---
 
 void setup() {
   Serial.begin(SERIAL_BAUD);
   delay(500);
 
-  Serial.println();
   Serial.println("=== Satelite ESP32 ===");
-  Serial.print("ID: ");
-  Serial.println(SATELITE_ID);
-  Serial.println("Pipeline: Wi-Fi > MQTT > dados > cripto > pacote > publicar");
-  Serial.println("Etapa atual: 1/6 Wi-Fi");
+  Serial.println("Etapa: Wi-Fi");
 
-  // 1) Wi-Fi
   wifiConectar();
-
-  // 2) MQTT — próximo (só depois do Wi-Fi estável)
-  // mqttConectar();
-
   ultimoStatusMs = millis();
 }
 
 void loop() {
-  // 1) Manter Wi-Fi
   wifiManter();
 
-  if (millis() - ultimoStatusMs >= WIFI_STATUS_INTERVAL_MS) {
-    wifiLogStatus();
+  if (millis() - ultimoStatusMs >= STATUS_MS) {
+    wifiMostrarStatus();
     ultimoStatusMs = millis();
   }
-
-  // Etapas futuras (não ativas ainda):
-  // 2) mqttManter();
-  // 3) gerarDados();
-  // 4) aplicarCriptografia();
-  // 5) montarPacote();
-  // 6) publicarMqtt();
 }
