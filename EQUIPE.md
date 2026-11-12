@@ -35,12 +35,13 @@ Detalhes: `firmware-esp32/README.md` (só avançar a próxima etapa quando a atu
 ### `cliente-pc/` (precisa de responsável)
 
 - Conectar ao broker MQTT da estação
-- Assinar o tópico do satélite
+- Assinar telemetria do ESP32
+- Publicar comandos de até 16 bytes
 - Interpretar o payload de 16 bytes
 - Verificar HMAC e/ou descriptografar AES
 - Mostrar dados e rejeitar mensagens inválidas
 
-Comece com um esqueleto (Python ou C++) que só conecta e imprime mensagens brutas. Guia: `cliente-pc/README.md`
+A aplicação inicial já realiza subscribe e publish. Guia: `cliente-pc/README.md`.
 
 ### `estacao-terrena/` (precisa de responsável)
 
