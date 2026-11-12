@@ -6,9 +6,8 @@
 
 #include <WiFi.h>
 
-// Altere só isto:
-const char *ssid = "NOME_DA_REDE";
-const char *senha = "SENHA_DA_REDE";
+const char *ssid = "teleco2k25";
+const char *senha = "teleco2k25";
 
 void setup() {
   Serial.begin(115200);

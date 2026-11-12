@@ -36,6 +36,15 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Credenciais Wi-Fi da turma no sketch
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/satelite/satelite.ino`
+- **O que mudou:** SSID/senha definidos como `teleco2k25`
+- **Por quê:** rede da turma para testes da etapa Wi-Fi
+- **Como testar / impacto:** gravar no ESP32 e conferir IP no Serial 115200
+
 ### 2026-11-12 — Simplifica firmware: um único .ino com SSID/senha
 
 - **Autor(es):** Miguel Julidori
