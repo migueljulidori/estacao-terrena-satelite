@@ -1,11 +1,10 @@
 """
-Cliente MQTT da estação terrena (somente RX).
+Aplicação de operação da estação terrena.
 
-- conecta ao Mosquitto;
-- assina satellite/esp32-01/telemetry;
-- exibe mensagens em HEX.
-
-O ESP32 só publica (TX). Este PC só recebe (RX). Sem telecomando.
+- conecta ao broker Mosquitto;
+- assina a telemetria do ESP32 (subscribe / RX);
+- permite enviar comandos ao ESP32 (publish / TX);
+- respeita o limite de 16 bytes por payload.
 """
 
 import sys
@@ -23,8 +22,11 @@ except ImportError:
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print(f"Conectado ao broker {config.BROKER_HOST}:{config.BROKER_PORT}")
-        client.subscribe(config.TOPIC_TELEMETRY, qos=0)
-        print(f"Inscrito (RX) em: {config.TOPIC_TELEMETRY}")
+        result, _mid = client.subscribe(config.TOPIC_TELEMETRY, qos=0)
+        if result == mqtt.MQTT_ERR_SUCCESS:
+            print(f"SUBSCRIBE ativo: {config.TOPIC_TELEMETRY}")
+        else:
+            print(f"Falha ao assinar telemetria. Codigo: {result}")
     else:
         print(f"Falha na conexao MQTT. Codigo: {reason_code}")
 
@@ -32,18 +34,55 @@ def on_connect(client, userdata, flags, reason_code, properties):
 def on_message(client, userdata, message):
     payload = message.payload
 
-    print(f"\nMensagem recebida em: {message.topic}")
+    print("\n" + "=" * 52)
+    print(f"TELEMETRIA recebida | tópico: {message.topic}")
     print(f"Tamanho: {len(payload)} byte(s)")
     print(f"HEX: {payload.hex(' ')}")
 
-    if len(payload) > config.MAX_PAYLOAD_BYTES:
-        print("AVISO: payload acima do limite de 16 bytes.")
+    if len(payload) == 0 or len(payload) > config.MAX_PAYLOAD_BYTES:
+        print("MENSAGEM REJEITADA: tamanho fora do intervalo permitido.")
+        print("=" * 52)
         return
 
     try:
         print(f"Texto: {payload.decode('utf-8')}")
     except UnicodeDecodeError:
-        print("Texto: conteudo binario (nao UTF-8)")
+        print("Texto: conteúdo binário (não UTF-8).")
+
+    print("=" * 52)
+
+
+def publicar_comando(client, texto):
+    """Publica um comando textual com no máximo 16 bytes UTF-8."""
+    payload = texto.encode("utf-8")
+
+    if not payload:
+        print("Comando vazio: nada foi enviado.")
+        return
+
+    if len(payload) > config.MAX_PAYLOAD_BYTES:
+        print(
+            f"Comando rejeitado: {len(payload)} bytes. "
+            f"O limite é {config.MAX_PAYLOAD_BYTES}."
+        )
+        return
+
+    if not client.is_connected():
+        print("Não conectado ao broker. Comando não enviado.")
+        return
+
+    info = client.publish(config.TOPIC_COMMAND, payload, qos=0, retain=False)
+    if info.rc == mqtt.MQTT_ERR_SUCCESS:
+        info.wait_for_publish(timeout=5)
+        if info.is_published():
+            print(
+                f"Comando publicado ({len(payload)} byte(s)) "
+                f"em {config.TOPIC_COMMAND}: {texto}"
+            )
+        else:
+            print("Publicação ainda não confirmada pelo cliente MQTT.")
+    else:
+        print(f"Falha ao publicar. Código: {info.rc}")
 
 
 def main():
@@ -60,20 +99,33 @@ def main():
     try:
         client.connect(config.BROKER_HOST, config.BROKER_PORT, keepalive=30)
     except OSError as error:
-        print(f"Nao foi possivel conectar ao broker: {error}")
+        print(f"Não foi possível conectar ao broker: {error}")
         sys.exit(1)
 
     client.loop_start()
-    print("Cliente RX pronto. Aguardando telemetria do ESP (Ctrl+C para sair).")
+    print("\nEstação terrena pronta.")
+    print("Recebendo telemetria continuamente.")
+    print("Digite um comando de até 16 bytes para enviar ao ESP32.")
+    print("Exemplo: PING | STATUS | LED_ON")
+    print("Digite /sair para encerrar.\n")
 
     try:
         while True:
-            time.sleep(0.5)
+            try:
+                comando = input("Comando > ").strip()
+            except EOFError:
+                break
+
+            if comando.lower() in ("/sair", "/exit", "sair"):
+                break
+            if comando:
+                publicar_comando(client, comando)
     except KeyboardInterrupt:
-        print("\nEncerrando...")
+        print("\nEncerrando aplicação...")
     finally:
         client.loop_stop()
         client.disconnect()
+        print("Desconectado do broker.")
 
 
 if __name__ == "__main__":
