@@ -4,8 +4,8 @@ Esta pasta contém a configuração de referência do broker da estação terren
 
 ## Topologia
 
-- ESP32: cliente MQTT `satellite-esp32-01`, IP fixo `192.168.30.52`.
-- PC/Raspberry Pi: executa o broker Mosquitto.
+- ESP32: cliente MQTT `SAT-01`, IP fixo `192.168.30.52`.
+- PC/Raspberry Pi: executa o broker Mosquitto e a aplicação Python de operação.
 - Porta MQTT: `1883`.
 - IP do broker: **a definir pela equipe**. Use o IP LAN real da máquina que executa o Mosquitto; não confunda com o IP do ESP32.
 
@@ -37,25 +37,32 @@ sudo systemctl status mosquitto
 
 Não coloque senhas reais nos arquivos versionados. O arquivo `passwd` deve permanecer no computador da estação e ter permissões de leitura adequadas para o serviço Mosquitto.
 
-## Tópicos iniciais
+## Tópicos e permissões
 
-| Direção | Tópico | Permissão |
+| Usuário | Permissão | Tópico |
 |---|---|---|
-| ESP32 → PC (TX) | `satellite/esp32-01/telemetry` | `satellite` publica; `groundstation` assina |
+| `satellite` | Publicar | `satellite/esp32-01/telemetry` |
+| `groundstation` | Assinar | `satellite/esp32-01/telemetry` |
+| `groundstation` | Publicar | `satellite/esp32-01/command` |
+| `satellite` | Assinar | `satellite/esp32-01/command` |
 
-Enlace **unidirecional**: sem tópico de telecomando.
+A ACL de exemplo já contém essas quatro permissões. Confirme que ela foi copiada para `/etc/mosquitto/acl`.
 
 ## Teste manual do broker
 
-Assine a telemetria (RX no PC):
+Receber telemetria:
 
 ```bash
-mosquitto_sub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' -t 'satellite/esp32-01/telemetry' -v
+mosquitto_sub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA_DO_USUARIO' -t 'satellite/esp32-01/telemetry' -v
 ```
 
-Quando o ESP publicar (etapa 6), a mensagem aparece aqui.
+Publicar um comando de teste (payload abaixo de 16 bytes):
 
-Evite usar `-P` com senha real em terminais compartilhados: o valor pode ficar no histórico do shell. Prefira ferramentas que solicitem a senha interativamente ou configure o cliente localmente.
+```bash
+mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA_DO_USUARIO' -t 'satellite/esp32-01/command' -m 'PING'
+```
+
+O ESP32 deve exibir o comando no Monitor Serial. Para evitar expor a senha no histórico do terminal, prefira usar o arquivo local de configuração da aplicação Python ou um método de autenticação interativo.
 
 ## Rede e segurança
 

@@ -36,6 +36,18 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Comunicação MQTT bidirecional entre ESP32 e estação terrena
+
+- **Autor(es):** Elias / implementação assistida
+- **Branch / PR:** `feature/mqtt-bidirecional` (PR #2)
+- **Áreas:** `firmware-esp32/`, `cliente-pc/`, `estacao-terrena/`, `docs/protocolo/`, `CONTEXTO.md`, `EQUIPE.md`, `README.md`
+- **O que mudou:**
+  - ESP32 mantém publish de telemetria e passa a assinar o tópico de comandos.
+  - Aplicação Python recebe telemetria e publica comandos de até 16 bytes.
+  - Documentação alinhada ao fluxo bidirecional e aos tópicos MQTT.
+- **Por quê:** permitir que a estação receba dados e também envie comandos pelo mesmo broker.
+- **Como testar / impacto:** executar aplicação Python, conferir `TESTE-N` e enviar `PING`; o comando deve aparecer no Monitor Serial do ESP32.
+
 ### 2026-11-12 — Módulo de dados com publish de teste
 
 - **Autor(es):** Miguel Julidori

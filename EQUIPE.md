@@ -8,8 +8,8 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 
 | Parte | Pasta | Responsável | Status |
 |-------|--------|-------------|--------|
-| Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | Pipeline: Wi-Fi → MQTT → dados → cripto → pacote → publicar — **agora: MQTT (conectar)** |
-| Cliente PC (MQTT + verificação) | `cliente-pc/` | _coloque seu nome_ | Aguardando responsável |
+| Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | Wi-Fi + MQTT bidirecional + telemetria de teste |
+| Cliente PC (aplicação MQTT) | `cliente-pc/` | _coloque seu nome_ | Subscribe de telemetria + publish de comandos implementados |
 | Estação terrena (broker Mosquitto / SSH) | `estacao-terrena/` | _coloque seu nome_ | Aguardando responsável |
 | Protocolo (payload ≤ 16 bytes) | `docs/protocolo/` | _coloque seu nome_ (pode ser em dupla) | Aguardando responsável |
 | Link budget (potência, latência, RTT) | `docs/link-budget/` | **JH** | Aguardando responsável |
@@ -35,12 +35,13 @@ Detalhes: `firmware-esp32/README.md` (só avançar a próxima etapa quando a atu
 ### `cliente-pc/` (precisa de responsável)
 
 - Conectar ao broker MQTT da estação
-- Assinar o tópico do satélite
+- Assinar telemetria do ESP32
+- Publicar comandos de até 16 bytes
 - Interpretar o payload de 16 bytes
 - Verificar HMAC e/ou descriptografar AES
 - Mostrar dados e rejeitar mensagens inválidas
 
-Comece com um esqueleto (Python ou C++) que só conecta e imprime mensagens brutas. Guia: `cliente-pc/README.md`
+A aplicação inicial já realiza subscribe e publish. Guia: `cliente-pc/README.md`.
 
 ### `estacao-terrena/` (precisa de responsável)
 

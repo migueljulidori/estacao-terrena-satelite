@@ -1,14 +1,22 @@
-# Cliente PC (estação terrena) — somente RX
+# Aplicação da estação terrena — cliente MQTT
 
-Assina a telemetria publicada pelo ESP32. **Não** envia telecomandos.
+A aplicação Python conecta-se ao Mosquitto e trabalha nos dois sentidos:
 
-## O que faz
+- **Subscribe (RX):** recebe a telemetria publicada pelo ESP32.
+- **Publish (TX):** envia comandos para o ESP32.
 
-1. Conecta ao broker Mosquitto
-2. Assina `satellite/esp32-01/telemetry`
-3. Exibe o payload em hexadecimal (limite do projeto: 16 bytes)
+O Mosquitto é o broker. Este programa é um cliente MQTT; não inicia um segundo broker.
+
+## Fluxo
+
+```text
+ESP32 --publish telemetry--> Mosquitto --entrega--> Aplicação Python
+ESP32 <--recebe command----- Mosquitto <--publish-- Aplicação Python
+```
 
 ## Instalação
+
+Entre nesta pasta e execute:
 
 ```bash
 python3 -m venv .venv
@@ -17,7 +25,7 @@ pip install -r requirements.txt
 cp mqtt_config.example.py mqtt_config.py
 ```
 
-Edite `mqtt_config.py` com o IP do broker.
+Edite `mqtt_config.py` e informe o IP da máquina que executa o Mosquitto, além da senha do usuário `groundstation`.
 
 ## Execução
 
@@ -25,4 +33,23 @@ Edite `mqtt_config.py` com o IP do broker.
 python mqtt_client.py
 ```
 
-Aguarda mensagens do ESP. Ctrl+C para sair.
+A aplicação começa a receber telemetria automaticamente. Para transmitir, digite um comando no terminal, por exemplo:
+
+- `PING`
+- `STATUS`
+- `LED_ON`
+
+O texto enviado é convertido para UTF-8 e precisa ocupar entre 1 e 16 bytes. Digite `/sair` para encerrar.
+
+## Tópicos e permissões
+
+| Cliente | Ação | Tópico |
+|---|---|---|
+| ESP32 | Publish | `satellite/esp32-01/telemetry` |
+| Aplicação PC | Subscribe | `satellite/esp32-01/telemetry` |
+| Aplicação PC | Publish | `satellite/esp32-01/command` |
+| ESP32 | Subscribe | `satellite/esp32-01/command` |
+
+## Observação
+
+Nesta etapa, o firmware apenas exibe o comando recebido no Monitor Serial. Os comandos ainda não acionam hardware nem alteram parâmetros do satélite. A interpretação/execução será definida depois, junto ao protocolo.

@@ -17,11 +17,11 @@ Simular uma estação terrena que se comunica com satélites (nós ESP32) por en
 ## Cenário
 
 | Papel | Hardware / software | Função |
-|-------|---------------------|--------|
-| Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT Mosquitto, cliente de operação |
-| Satélite | ESP32 | Só **publica** telemetria (TX) |
-| Cliente PC | Computador | Só **assina** telemetria (RX) |
-| Gerência | SSH na LAN | Manutenção local (sem exposição à internet) |
+|---|---|---|
+| Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT Mosquitto e aplicação de operação |
+| Satélite | ESP32 | Publica telemetria e recebe comandos |
+| Aplicação PC | Computador com Python/Paho MQTT | Assina telemetria e publica comandos |
+| Gerência | SSH na LAN | Manutenção local, sem exposição à internet |
 
 Rede isolada da turma — sem internet e sem dispositivos externos.
 
@@ -42,17 +42,18 @@ Rede isolada da turma — sem internet e sem dispositivos externos.
 
 Conteúdo típico de telemetria (exemplos do enunciado): energia, temperatura interna/externa, irradiação solar, etc.
 
-## MQTT — enlace unidirecional (decisão da equipe)
+## MQTT — enlace bidirecional
 
-Broker: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. IP da estação ainda a definir (`mqtt_broker` no ESP / config do cliente PC).
+Broker: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. O IP da estação ainda deve ser definido (`mqtt_broker` no firmware e `mqtt_config.py` no PC).
 
-**Fluxo:** ESP32 só **TX** (publish) → broker → PC só **RX** (subscribe). Sem telecomando / sem troca bidirecional.
+O ESP32 publica telemetria e assina comandos; a aplicação PC assina telemetria e publica comandos.
 
-| Direção | Papel | Tópico |
-|---|---|---|
-| ESP32 → PC | Publish (TX) | `satellite/esp32-01/telemetry` |
+| Direção | Publisher | Subscriber | Tópico |
+|---|---|---|---|
+| ESP32 → PC | ESP32 | PC | `satellite/esp32-01/telemetry` |
+| PC → ESP32 | PC | ESP32 | `satellite/esp32-01/command` |
 
-Etapa atual do firmware: conectar e manter MQTT. Publicação da telemetria vem na etapa 6 do pipeline.
+O payload de cada mensagem da aplicação deve ter no máximo 16 bytes. Nesta etapa, o ESP32 exibe comandos válidos no Monitor Serial, sem executar ações físicas.
 
 TLS no broker não é obrigatório nesta etapa (LAN isolada). HMAC/AES entram depois no payload da aplicação.
 
@@ -74,11 +75,12 @@ Observações: proteção contra replay quando aplicável; não basta embaralhar
 
 ## Cliente PC
 
-- Conectar ao broker MQTT da estação
-- Assinar tópico do satélite da equipe
-- Interpretar protocolo, verificar autenticidade e/ou descriptografar
-- Rejeitar mensagens inválidas
-- Exibir dados e resultado das verificações
+- Conectar ao broker MQTT da estação.
+- Assinar o tópico de telemetria do satélite.
+- Publicar comandos no tópico de telecomando.
+- Interpretar protocolo, verificar autenticidade e/ou descriptografar.
+- Rejeitar mensagens inválidas.
+- Exibir dados e resultado das verificações.
 
 ## Link budget
 
@@ -95,7 +97,7 @@ Além da comunicação, dimensionar potência da estação, latência e RTT conf
 Definida pela equipe; implementar **nesta ordem**, sem pular:
 
 1. **Wi-Fi** ✓ — IP fixo `192.168.30.52`
-2. **MQTT** ✓ — conectar ao broker como publisher (Miguel; sem subscribe)
+2. **MQTT** ✓ — conectar ao broker, publicar telemetria e assinar comandos
 3. **Gerar dados** ← teste `TESTE-N` via `dados_mod.h` (telemetria real depois)
 4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; pendente)
 5. **Montar pacote** — payload final ≤ 16 bytes (`docs/protocolo/`; pendente)
@@ -115,13 +117,13 @@ Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Juli
 | Broker MQTT | Mosquitto em PC Linux/Raspberry Pi |
 | IP do broker | _a definir_; no ESP: variável `mqtt_broker` no `.ino`; no PC: `mqtt_config.py` |
 | Porta MQTT | TCP 1883 (LAN isolada; sem TLS nesta etapa) |
-| Sentido do enlace | Unidirecional: ESP publish (TX), PC subscribe (RX) |
+| Sentido do enlace | Bidirecional: ESP publica telemetria e assina comandos; PC faz o inverso |
 | Tópico de telemetria | `satellite/esp32-01/telemetry` |
-| Tópico de telecomando | **não usado** (sem RX no ESP) |
+| Tópico de telecomando | `satellite/esp32-01/command` |
 | Mecanismo de autenticação de mensagem | HMAC-SHA256 (planejado; mbedTLS) |
 | Mecanismo de confidencialidade | AES-CBC (planejado; mbedTLS) |
 | Formato do payload (16 B) | _a definir_ (`docs/protocolo/`) |
-| Progresso firmware | **2/6 — Wi-Fi + MQTT connect (publish-only)** |
+| Progresso firmware | **MQTT bidirecional + telemetria de teste** |
 
 ## Fontes
 
