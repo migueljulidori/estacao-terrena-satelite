@@ -1,0 +1,16 @@
+# Configuracao de exemplo para o broker MQTT da estacao terrena.
+# Copie para /etc/mosquitto/conf.d/estacao.conf e ajuste os caminhos se necessario.
+
+# A porta 1883 e MQTT sem TLS: usar somente na LAN isolada da equipe.
+listener 1883 0.0.0.0
+allow_anonymous false
+
+# Crie estes arquivos conforme estacao-terrena/README.md.
+password_file /etc/mosquitto/passwd
+acl_file /etc/mosquitto/acl
+
+persistence true
+persistence_location /var/lib/mosquitto/
+log_type error
+log_type warning
+log_type notice
