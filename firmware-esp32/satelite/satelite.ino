@@ -2,14 +2,12 @@
  * Satélite ESP32 — orquestra os módulos
  * Ordem: Wi-Fi → MQTT → dados → criptografia → pacote → publicar
  *
- * Módulos:
- *   wifi_mod.*  — Wi-Fi
- *   mqtt_mod.*  — MQTT
+ *   wifi_mod.h — Wi-Fi
+ *   mqtt_mod.h — MQTT
  *
  * Biblioteca: PubSubClient | Serial: 115200
  */
 
-#include <WiFi.h>
 #include "wifi_mod.h"
 #include "mqtt_mod.h"
 

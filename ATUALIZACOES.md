@@ -36,6 +36,17 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Um arquivo por módulo (wifi / mqtt)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `firmware-esp32/satelite/`
+- **O que mudou:**
+  - Só `wifi_mod.h` e `mqtt_mod.h` (sem pares `.cpp`)
+  - Removidos `.cpp` e `secrets.example.h` não usados
+- **Por quê:** menos abas no Arduino IDE; um arquivo por função
+- **Como testar / impacto:** reabrir a pasta `satelite/` no IDE
+
 ### 2026-11-12 — ESP só publish (TX); PC só subscribe (RX)
 
 - **Autor(es):** Miguel Julidori

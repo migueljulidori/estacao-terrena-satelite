@@ -1,33 +1,25 @@
 # Firmware ESP32 (satélite) — Miguel
 
-## Papel no enlace
+## Papel
 
-- **ESP32:** só **publica** (TX) telemetria no broker  
-- **PC:** só **assina** (RX) como client MQTT  
-- **Sem** troca bidirecional / sem telecomando no ESP  
+ESP só **TX** (publish) · PC só **RX** (subscribe)
+
+## Arquivos (3 no total)
+
+| Arquivo | Função |
+|---------|--------|
+| `satelite.ino` | `setup` / `loop` |
+| `wifi_mod.h` | todo o Wi-Fi |
+| `mqtt_mod.h` | todo o MQTT |
 
 ## Ordem
 
 1. Wi-Fi ✓  
-2. **MQTT** ← atual (só conectar / manter; ainda sem `publish`)  
-3. Gerar dados  
-4. Criptografia  
-5. Montar pacote  
-6. Publicar telemetria  
-
-## Arquivos
-
-| Arquivo | Função |
-|---------|--------|
-| `satelite/satelite.ino` | `setup` / `loop` |
-| `satelite/wifi_mod.*` | Wi-Fi |
-| `satelite/mqtt_mod.*` | MQTT (cliente publisher) |
+2. MQTT ← conectar (ainda sem publish)  
+3. Gerar dados → 4. Criptografia → 5. Pacote → 6. Publicar  
 
 ## Como gravar
 
-1. Instale **PubSubClient**.
-2. `wifi_mod.cpp`: rede e IP do ESP.
-3. `mqtt_mod.cpp`: `mqtt_broker` = IP do Mosquitto.
-4. Abra a pasta `satelite/`, grave, Serial **115200**.
-
-Tópico de TX (quando chegar a etapa 6): `satellite/esp32-01/telemetry`
+1. PubSubClient instalado  
+2. Ajuste `mqtt_broker` em `mqtt_mod.h` (IP do PC com Mosquitto)  
+3. Abra a pasta `satelite/`, grave, Serial **115200**
