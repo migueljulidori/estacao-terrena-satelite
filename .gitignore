@@ -1,0 +1,43 @@
+# Segredos e ambiente local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Chaves / configs locais do projeto
+**/secrets.h
+**/secrets.hpp
+**/wifi_credentials.*
+**/mqtt_credentials.*
+
+# Build / IDE
+build/
+.pio/
+.vscode/
+.idea/
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# Logs e temporários
+*.log
+tmp/
+temp/
