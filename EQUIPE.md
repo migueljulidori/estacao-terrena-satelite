@@ -12,7 +12,7 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 | Cliente PC (MQTT + verificação) | `cliente-pc/` | _coloque seu nome_ | Aguardando responsável |
 | Estação terrena (broker Mosquitto / SSH) | `estacao-terrena/` | _coloque seu nome_ | Aguardando responsável |
 | Protocolo (payload ≤ 16 bytes) | `docs/protocolo/` | _coloque seu nome_ (pode ser em dupla) | Aguardando responsável |
-| Link budget (potência, latência, RTT) | `docs/link-budget/` | _coloque seu nome_ | Aguardando responsável |
+| Link budget (potência, latência, RTT) | `docs/link-budget/` | **JH** | Aguardando responsável |
 | Documentação / consolidação | `CONTEXTO.md`, relatórios | _coloque seu nome_ | Apoio de todos |
 
 ## Como “pegar” sua parte
