@@ -53,13 +53,13 @@ A ACL de exemplo já contém essas quatro permissões. Confirme que ela foi copi
 Receber telemetria:
 
 ```bash
-mosquitto_sub -h IP_DO_BROKER -p 1883 -u groundstation -t 'satellite/esp32-01/telemetry' -v
+mosquitto_sub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA_DO_USUARIO' -t 'satellite/esp32-01/telemetry' -v
 ```
 
 Publicar um comando de teste (payload abaixo de 16 bytes):
 
 ```bash
-mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -t 'satellite/esp32-01/command' -m 'PING'
+mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA_DO_USUARIO' -t 'satellite/esp32-01/command' -m 'PING'
 ```
 
 O ESP32 deve exibir o comando no Monitor Serial. Para evitar expor a senha no histórico do terminal, prefira usar o arquivo local de configuração da aplicação Python ou um método de autenticação interativo.
