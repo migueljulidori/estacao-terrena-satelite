@@ -9,7 +9,7 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 | Parte | Pasta | Responsável | Status |
 |-------|--------|-------------|--------|
 | Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | Pipeline: Wi-Fi → MQTT → dados → cripto → pacote → publicar — **agora: MQTT (conectar)** |
-| Cliente PC (MQTT + verificação) | `cliente-pc/` | _coloque seu nome_ | Aguardando responsável |
+| Cliente PC (MQTT + verificação + painel web) | `cliente-pc/` | **Manuela Lino** | Responsável pela recepção MQTT, interpretação/verificação dos dados e interface web; integração em desenvolvimento |
 | Estação terrena (broker Mosquitto / SSH) | `estacao-terrena/` | _coloque seu nome_ | Aguardando responsável |
 | Protocolo (payload ≤ 16 bytes) | `docs/protocolo/` | _coloque seu nome_ (pode ser em dupla) | Aguardando responsável |
 | Link budget (potência, latência, RTT) | `docs/link-budget/` | **JH** | Aguardando responsável |
@@ -32,15 +32,16 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 1. Wi-Fi → 2. MQTT → 3. Gerar dados → 4. Criptografia → 5. Montar pacote → 6. Publicar  
 Detalhes: `firmware-esp32/README.md` (só avançar a próxima etapa quando a atual estiver estável)
 
-### `cliente-pc/` (precisa de responsável)
+### `cliente-pc/` (Manuela — em andamento)
 
 - Conectar ao broker MQTT da estação
-- Assinar o tópico do satélite
-- Interpretar o payload de 16 bytes
-- Verificar HMAC e/ou descriptografar AES
-- Mostrar dados e rejeitar mensagens inválidas
+- Assinar o tópico de telemetria do satélite
+- Interpretar o payload de até 16 bytes
+- Verificar HMAC e/ou descriptografar AES, conforme o protocolo definido
+- Rejeitar mensagens inválidas e apresentar os dados recebidos
+- Manter o painel web de monitoramento e integrá-lo ao cliente de recepção
 
-Comece com um esqueleto (Python ou C++) que só conecta e imprime mensagens brutas. Guia: `cliente-pc/README.md`
+O cliente Python e o painel web são componentes da mesma área. Comece validando a recepção de mensagens brutas; a integração de segurança e a atualização em tempo real do painel dependem da implementação do protocolo. Guia: `cliente-pc/README.md`
 
 ### `estacao-terrena/` (precisa de responsável)
 
