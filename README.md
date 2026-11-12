@@ -15,9 +15,9 @@ Este repositório é compartilhado. Cada pessoa deve **assumir uma parte** e env
 ## Status atual
 
 - **Enlace:** ESP só **TX** (publish); PC só **RX** (subscribe) — sem telecomando
-- **Miguel — ESP32:** Wi-Fi + MQTT connect em [`firmware-esp32/`](firmware-esp32/)
-- **Broker / cliente PC:** `estacao-terrena/`, `cliente-pc/`
-- **Pendente:** IP do broker, gerar dados, cripto, pacote, publish — veja [`EQUIPE.md`](EQUIPE.md)
+- **Miguel — ESP32:** Wi-Fi + MQTT e publicação de teste em [`firmware-esp32/`](firmware-esp32/)
+- **Manuela — Cliente PC:** recepção MQTT, interpretação/verificação e painel web em [`cliente-pc/`](cliente-pc/)
+- **Pendente:** validação criptográfica, definição final do payload e integração dos dados ao painel — veja [`EQUIPE.md`](EQUIPE.md)
 
 ## Estrutura
 
@@ -37,7 +37,13 @@ estacao-terrena-satelite/
 │   ├── README.md
 │   ├── mqtt_client.py
 │   ├── mqtt_config.example.py
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── website/
+│       ├── index.html
+│       ├── style.css
+│       ├── script.js
+│       └── assets/
+│           └── terra-estacao.png
 ├── estacao-terrena/
 │   ├── README.md
 │   ├── mosquitto.conf.example
