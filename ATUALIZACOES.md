@@ -36,6 +36,17 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Passo a passo de colaboração no GitHub
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `CONTRIBUTING.md`, `README.md`
+- **O que mudou:**
+  - Reescreveu `CONTRIBUTING.md` como guia passo a passo (convite, clone, branch, commit, push, PR, merge, conflitos)
+  - Destacou o link do guia no `README.md`
+- **Por quê:** orientar a equipe sobre como enviar atualizações e manter o repositório sincronizado
+- **Como testar / impacto:** qualquer colaborador deve seguir `CONTRIBUTING.md` antes de contribuir
+
 ### 2026-11-12 — Criação do repositório compartilhado
 
 - **Autor(es):** Miguel Julidori

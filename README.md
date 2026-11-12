@@ -8,15 +8,18 @@ Simulação de uma **estação terrena** que se comunica com **satélites** (nó
 
 Este repositório é **privado e compartilhado**. Cada mudança no código ou na documentação deve ir para o GitHub para que **todo o grupo veja o mesmo estado**.
 
-Fluxo recomendado (resumo):
+### Passo a passo completo (obrigatório ler)
 
-1. Clonar o repositório e trabalhar em uma **branch** (não direto em `main`).
-2. Fazer commit com mensagem clara.
-3. Atualizar [`ATUALIZACOES.md`](ATUALIZACOES.md) descrevendo o que mudou.
-4. Abrir um **Pull Request** e pedir revisão de pelo menos um colega.
-5. Após aprovação, fazer merge em `main`.
+**[`CONTRIBUTING.md`](CONTRIBUTING.md)** — do convite ao clone, branch, commit, push, Pull Request, merge e atualização do `ATUALIZACOES.md`.
 
-Detalhes em [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Resumo:
+
+1. Aceitar o convite de colaborador no GitHub.
+2. Clonar o repositório.
+3. Trabalhar em uma **branch** (não direto em `main`).
+4. Atualizar [`ATUALIZACOES.md`](ATUALIZACOES.md) descrevendo o que mudou.
+5. `git push` + abrir **Pull Request** + pedir revisão.
+6. Após o merge, todo mundo faz `git pull` na `main`.
 
 ## Estrutura
 
