@@ -17,11 +17,11 @@ Simular uma estação terrena que se comunica com satélites (nós ESP32) por en
 ## Cenário
 
 | Papel | Hardware / software | Função |
-|-------|---------------------|--------|
-| Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT Mosquitto, cliente de operação |
-| Satélite | ESP32 | Só **publica** telemetria (TX) |
-| Cliente PC | Computador | Só **assina** telemetria (RX) |
-| Gerência | SSH na LAN | Manutenção local (sem exposição à internet) |
+|---|---|---|
+| Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT Mosquitto e aplicação de operação |
+| Satélite | ESP32 | Publica telemetria e recebe comandos |
+| Aplicação PC | Computador com Python/Paho MQTT | Assina telemetria e publica comandos |
+| Gerência | SSH na LAN | Manutenção local, sem exposição à internet |
 
 Rede isolada da turma — sem internet e sem dispositivos externos.
 
