@@ -36,6 +36,15 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — IP fixo do ESP32
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/satelite/satelite.ino`
+- **O que mudou:** `WiFi.config` com IP `192.168.30.52`, gateway/DNS `192.168.30.1`
+- **Por quê:** endereço estável do satélite na LAN da turma
+- **Como testar / impacto:** gravar e confirmar no Serial que o IP é 192.168.30.52
+
 ### 2026-11-12 — Credenciais Wi-Fi da turma no sketch
 
 - **Autor(es):** Miguel Julidori
