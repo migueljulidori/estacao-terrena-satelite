@@ -1,48 +1,48 @@
 /*
- * Satélite simulado — ESP32
- * Etapa atual: 1/6 Wi-Fi
- *
- * Ordem: Wi-Fi → MQTT → gerar dados → criptografia → montar pacote → publicar
- *
- * Antes de gravar:
- *   cp secrets.example.h secrets.h
- *   (edite SSID e senha)
- * Serial Monitor: 115200
- *
- * Modularização:
- *   config.h      → constantes
- *   secrets.h     → SSID/senha (local, não vai pro Git)
- *   wifi_link.*   → funções do Wi-Fi
- *   satelite.ino  → setup/loop (orquestra as etapas)
+ * Satélite ESP32 — etapa Wi-Fi
+ * Ordem depois: MQTT → dados → criptografia → pacote → publicar
+ * Serial: 115200
  */
 
-#include "config.h"
-#include "wifi_link.h"
+#include <WiFi.h>
 
-// Definição das constantes declaradas em config.h
-const char *SATELITE_ID = "SAT-01";
-const unsigned long SERIAL_BAUD = 115200;
-const unsigned long WIFI_RETRY_MS = 500;
-const unsigned long STATUS_MS = 5000;
-
-unsigned long ultimoStatusMs = 0;
+// Altere só isto:
+const char *ssid = "NOME_DA_REDE";
+const char *senha = "SENHA_DA_REDE";
 
 void setup() {
-  Serial.begin(SERIAL_BAUD);
+  Serial.begin(115200);
   delay(500);
 
-  Serial.println("=== Satelite ESP32 ===");
-  Serial.println("Etapa: Wi-Fi");
+  Serial.println("Satelite ESP32 — Wi-Fi");
+  Serial.print("Conectando: ");
+  Serial.println(ssid);
 
-  wifiConectar();
-  ultimoStatusMs = millis();
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, senha);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("Conectado.");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
 }
 
 void loop() {
-  wifiManter();
-
-  if (millis() - ultimoStatusMs >= STATUS_MS) {
-    wifiMostrarStatus();
-    ultimoStatusMs = millis();
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wi-Fi caiu. Reconectando...");
+    WiFi.begin(ssid, senha);
+    delay(5000);
+    return;
   }
+
+  Serial.print("OK | IP=");
+  Serial.print(WiFi.localIP());
+  Serial.print(" | RSSI=");
+  Serial.println(WiFi.RSSI());
+  delay(5000);
 }

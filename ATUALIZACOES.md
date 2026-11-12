@@ -36,6 +36,17 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Simplifica firmware: um único .ino com SSID/senha
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/satelite/`
+- **O que mudou:**
+  - Código Wi-Fi só em `satelite.ino` (`ssid` e `senha` diretos)
+  - Removidos `config.h`, `wifi_link.*`, `secrets.example.h`
+- **Por quê:** pedir organização mínima, sem modularização prematura
+- **Como testar / impacto:** editar ssid/senha no .ino, gravar, Serial 115200
+
 ### 2026-11-12 — Modulariza o firmware Wi-Fi (.h / .cpp)
 
 - **Autor(es):** Miguel Julidori
