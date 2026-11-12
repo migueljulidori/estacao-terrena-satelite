@@ -15,7 +15,7 @@ Este repositório é compartilhado. Cada pessoa deve **assumir uma parte** e env
 ## Status atual
 
 - **Enlace:** MQTT bidirecional — ESP publica telemetria e assina comandos; aplicação PC assina telemetria e publica comandos
-- **Miguel — ESP32:** Wi-Fi + MQTT connect em [`firmware-esp32/`](firmware-esp32/)
+- **Miguel — ESP32:** Wi-Fi + MQTT bidirecional + telemetria de teste em [`firmware-esp32/`](firmware-esp32/)
 - **Broker / cliente PC:** `estacao-terrena/`, `cliente-pc/`
 - **Pendente:** definir protocolo final, telemetria real e segurança HMAC/AES — veja [`EQUIPE.md`](EQUIPE.md)
 
@@ -32,7 +32,9 @@ estacao-terrena-satelite/
 │   ├── README.md
 │   └── satelite/
 │       ├── satelite.ino
-│       └── secrets.example.h
+│       ├── wifi_mod.h
+│       ├── mqtt_mod.h
+│       └── dados_mod.h
 ├── cliente-pc/
 │   ├── README.md
 │   ├── mqtt_client.py
