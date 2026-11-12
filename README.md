@@ -14,7 +14,7 @@ Este repositório é **privado e compartilhado**. Cada pessoa deve **assumir uma
 
 ### Em andamento agora
 
-- **Miguel — ESP32:** etapa Wi-Fi em [`firmware-esp32/`](firmware-esp32/) (próximo: MQTT)
+- **Miguel — ESP32:** pipeline Wi-Fi → MQTT → dados → cripto → pacote → publicar — **agora só Wi-Fi** em [`firmware-esp32/`](firmware-esp32/)
 - **Ainda sem responsável:** `cliente-pc/`, `estacao-terrena/`, `docs/protocolo/`, `docs/link-budget/` — veja [`EQUIPE.md`](EQUIPE.md)
 
 ## Estrutura

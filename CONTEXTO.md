@@ -75,9 +75,20 @@ Além da comunicação, dimensionar potência da estação, latência e RTT conf
 - Memória de cálculo do link budget
 - Especificação técnica do protocolo com exemplos
 
+## Pipeline do firmware ESP32 (ordem oficial)
+
+Definida pela equipe; implementar **nesta ordem**, sem pular:
+
+1. **Wi-Fi** ← etapa atual (Miguel)
+2. **MQTT** — conectar ao broker da estação terrena
+3. **Gerar dados** — telemetria bruta
+4. **Criptografia** — AES-CBC e/ou HMAC-SHA256 (mbedTLS; PDFs de planejamento)
+5. **Montar pacote** — payload final ≤ 16 bytes (`docs/protocolo/`)
+6. **Publicar** — envio MQTT no tópico do satélite
+
 ## Divisão de trabalho
 
-Ver [`EQUIPE.md`](EQUIPE.md). Responsável atual pelo satélite (ESP32): **Miguel Julidori** — etapa Wi-Fi em andamento.
+Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Julidori** — etapa 1/6 Wi-Fi.
 
 ## Decisões da equipe (preencher)
 
@@ -90,7 +101,7 @@ Ver [`EQUIPE.md`](EQUIPE.md). Responsável atual pelo satélite (ESP32): **Migue
 | Mecanismo de confidencialidade | AES-CBC (planejado; mbedTLS) |
 | Formato do payload (16 B) | _a definir_ (`docs/protocolo/`) |
 | Tópicos MQTT | _a definir_ |
-| Progresso firmware | Etapa 1: Wi-Fi (`firmware-esp32/satelite/`) |
+| Progresso firmware | **1/6 Wi-Fi** (`firmware-esp32/satelite/`) |
 
 ## Fontes
 

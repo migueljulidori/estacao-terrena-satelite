@@ -8,7 +8,7 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 
 | Parte | Pasta | Responsável | Status |
 |-------|--------|-------------|--------|
-| Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | Etapa 1: Wi-Fi iniciada |
+| Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | Pipeline: Wi-Fi → MQTT → dados → cripto → pacote → publicar — **agora: Wi-Fi** |
 | Cliente PC (MQTT + verificação) | `cliente-pc/` | _coloque seu nome_ | Aguardando responsável |
 | Estação terrena (broker Mosquitto / SSH) | `estacao-terrena/` | _coloque seu nome_ | Aguardando responsável |
 | Protocolo (payload ≤ 16 bytes) | `docs/protocolo/` | _coloque seu nome_ (pode ser em dupla) | Aguardando responsável |
@@ -29,8 +29,8 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 
 ### `firmware-esp32/` (Miguel — em andamento)
 
-1. Wi-Fi → 2. MQTT → 3. Payload → 4. HMAC → 5. AES  
-Detalhes: `firmware-esp32/README.md`
+1. Wi-Fi → 2. MQTT → 3. Gerar dados → 4. Criptografia → 5. Montar pacote → 6. Publicar  
+Detalhes: `firmware-esp32/README.md` (só avançar a próxima etapa quando a atual estiver estável)
 
 ### `cliente-pc/` (precisa de responsável)
 

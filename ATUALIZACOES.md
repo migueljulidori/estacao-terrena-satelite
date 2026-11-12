@@ -36,6 +36,17 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Ordem oficial do pipeline do firmware
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/`, `CONTEXTO.md`, `EQUIPE.md`
+- **O que mudou:**
+  - Fixou a ordem: Wi-Fi → MQTT → gerar dados → criptografia → montar pacote → publicar
+  - Comentários do sketch e docs alinhados aos PDFs; etapa ativa permanece só Wi-Fi
+- **Por quê:** evitar pular etapas e manter o grupo no mesmo plano de evolução
+- **Como testar / impacto:** continuar validando Wi-Fi; MQTT só na próxima etapa
+
 ### 2026-11-12 — Início do firmware ESP32 (Wi-Fi) + papéis da equipe
 
 - **Autor(es):** Miguel Julidori
