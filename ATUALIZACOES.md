@@ -36,6 +36,19 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-12 — Início do firmware ESP32 (Wi-Fi) + papéis da equipe
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** `main`
+- **Áreas:** `firmware-esp32/`, `EQUIPE.md`, READMEs das pastas, `README.md`, `CONTEXTO.md`
+- **O que mudou:**
+  - Sketch do satélite com conexão Wi-Fi, reconexão e log de IP/RSSI
+  - `secrets.example.h` (credenciais locais fora do Git)
+  - `EQUIPE.md` pedindo que cada pessoa assuma sua parte
+  - READMEs de `cliente-pc/`, `estacao-terrena/`, protocolo e link-budget com guia de início
+- **Por quê:** começar a Fase 1 pelo enlace Wi-Fi do ESP32 e organizar o trabalho colaborativo
+- **Como testar / impacto:** copiar `secrets.example.h` → `secrets.h`, gravar `satelite.ino` no ESP32, Serial 115200; colegas devem preencher `EQUIPE.md`
+
 ### 2026-11-12 — Passo a passo de colaboração no GitHub
 
 - **Autor(es):** Miguel Julidori

@@ -4,38 +4,35 @@ Projeto Integrado – Telecomunicações (3º Trimestre 2026).
 
 Simulação de uma **estação terrena** que se comunica com **satélites** (nós ESP32) via MQTT, com dimensionamento de enlace (link budget) e mecanismos de segurança (autenticação HMAC e/ou criptografia AES).
 
-## Para a equipe
+## Para a equipe — comece por aqui
 
-Este repositório é **privado e compartilhado**. Cada mudança no código ou na documentação deve ir para o GitHub para que **todo o grupo veja o mesmo estado**.
+Este repositório é **privado e compartilhado**. Cada pessoa deve **assumir uma parte** e enviar atualizações pelo GitHub.
 
-### Passo a passo completo (obrigatório ler)
+1. **Passo a passo Git:** [`CONTRIBUTING.md`](CONTRIBUTING.md) (convite → clone → branch → PR)
+2. **Escolha sua parte:** [`EQUIPE.md`](EQUIPE.md) — coloque seu nome na tabela e comece na pasta indicada
+3. **Registre mudanças:** [`ATUALIZACOES.md`](ATUALIZACOES.md) (obrigatório em todo PR)
 
-**[`CONTRIBUTING.md`](CONTRIBUTING.md)** — do convite ao clone, branch, commit, push, Pull Request, merge e atualização do `ATUALIZACOES.md`.
+### Em andamento agora
 
-Resumo:
-
-1. Aceitar o convite de colaborador no GitHub.
-2. Clonar o repositório.
-3. Trabalhar em uma **branch** (não direto em `main`).
-4. Atualizar [`ATUALIZACOES.md`](ATUALIZACOES.md) descrevendo o que mudou.
-5. `git push` + abrir **Pull Request** + pedir revisão.
-6. Após o merge, todo mundo faz `git pull` na `main`.
+- **Miguel — ESP32:** etapa Wi-Fi em [`firmware-esp32/`](firmware-esp32/) (próximo: MQTT)
+- **Ainda sem responsável:** `cliente-pc/`, `estacao-terrena/`, `docs/protocolo/`, `docs/link-budget/` — veja [`EQUIPE.md`](EQUIPE.md)
 
 ## Estrutura
 
 ```
 estacao-terrena-satelite/
 ├── README.md                 # Visão geral (este arquivo)
+├── EQUIPE.md                 # Quem faz cada parte (coloque seu nome)
 ├── CONTEXTO.md               # Contexto e requisitos do projeto
 ├── ATUALIZACOES.md           # Histórico de mudanças (obrigatório atualizar)
-├── CONTRIBUTING.md           # Como colaborar no GitHub
-├── firmware-esp32/           # Firmware do satélite (ESP32)
-├── cliente-pc/               # Cliente da estação terrena (PC)
-├── estacao-terrena/          # Configuração do broker MQTT / scripts da estação
+├── CONTRIBUTING.md           # Passo a passo no GitHub
+├── firmware-esp32/           # Satélite ESP32 — Miguel (Wi-Fi em andamento)
+├── cliente-pc/               # Cliente PC — aguardando responsável
+├── estacao-terrena/          # Broker MQTT / SSH — aguardando responsável
 └── docs/
     ├── referencia/           # PDFs oficiais do projeto
-    ├── protocolo/            # Especificação do protocolo (16 bytes)
-    └── link-budget/          # Memória de cálculo do enlace
+    ├── protocolo/            # Payload ≤ 16 bytes — aguardando responsável
+    └── link-budget/          # Cálculo de enlace — aguardando responsável
 ```
 
 ## Documentação de referência
@@ -46,4 +43,6 @@ estacao-terrena-satelite/
 
 ## Status atual
 
-Repositório criado com documentação inicial. Implementação (firmware, cliente e protocolo) começa a partir das próximas instruções da equipe.
+- Repositório e documentação colaborativa prontos
+- Firmware ESP32: **conexão Wi-Fi** iniciada (`firmware-esp32/satelite/`)
+- Demais partes: aguardando cada integrante assumir em `EQUIPE.md`

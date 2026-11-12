@@ -75,6 +75,10 @@ Além da comunicação, dimensionar potência da estação, latência e RTT conf
 - Memória de cálculo do link budget
 - Especificação técnica do protocolo com exemplos
 
+## Divisão de trabalho
+
+Ver [`EQUIPE.md`](EQUIPE.md). Responsável atual pelo satélite (ESP32): **Miguel Julidori** — etapa Wi-Fi em andamento.
+
 ## Decisões da equipe (preencher)
 
 | Item | Decisão |
@@ -82,10 +86,11 @@ Além da comunicação, dimensionar potência da estação, latência e RTT conf
 | Número da equipe | _a definir_ |
 | Órbita / banda / antena | _a definir_ |
 | Conteúdo da telemetria | _a definir_ |
-| Mecanismo de autenticação | _a definir_ |
-| Mecanismo de confidencialidade | _a definir_ |
-| Formato do payload (16 B) | _a definir_ |
+| Mecanismo de autenticação | HMAC-SHA256 (planejado; mbedTLS) |
+| Mecanismo de confidencialidade | AES-CBC (planejado; mbedTLS) |
+| Formato do payload (16 B) | _a definir_ (`docs/protocolo/`) |
 | Tópicos MQTT | _a definir_ |
+| Progresso firmware | Etapa 1: Wi-Fi (`firmware-esp32/satelite/`) |
 
 ## Fontes
 

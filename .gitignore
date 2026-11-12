@@ -10,6 +10,7 @@ credentials.json
 # Chaves / configs locais do projeto
 **/secrets.h
 **/secrets.hpp
+!**/secrets.example.h
 **/wifi_credentials.*
 **/mqtt_credentials.*
 

@@ -7,6 +7,8 @@ Leia na ordem. Na primeira vez, faça as seções 1 a 3. Nas próximas mudanças
 
 ---
 
+Antes de codar: leia também [`EQUIPE.md`](EQUIPE.md) e **coloque seu nome** na parte que você vai fazer.
+
 ## 1. Aceitar o convite
 
 1. O dono do repositório (Miguel) convida você em **Settings → Collaborators**.
