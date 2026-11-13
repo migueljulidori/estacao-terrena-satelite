@@ -1,16 +1,34 @@
-# Protocolo MQTT — PI 3T (bidirecional)
+# Protocolo de comunicação — PI 3T
 
-## Tópicos
+## Transporte e tópicos
+
+O transporte definido pelo enunciado é MQTT. O enlace é bidirecional:
 
 | Direção | Tópico |
 |---|---|
-| Satélite ESP32 → estação | `satellite/esp32-01/telemetry` |
-| Estação → satélite ESP32 | `satellite/esp32-01/command` |
+| ESP32 → estação (telemetria) | `satellite/esp32-01/telemetry` |
+| Estação → ESP32 (comando/configuração) | `satellite/esp32-01/command` |
 
-## Estado
+## Estado atual
 
-- Comunicação de teste: ESP envia `TESTE-N`; PC pode enviar comando curto.
-- Formato byte a byte **ainda não definido** (dados úteis + ID + segurança).
-- Limite de 16 bytes mantido no código de teste; confirmar com o PI 3T / professor o tamanho final.
+- ESP32 publica mensagens de teste `TESTE-N`.
+- ESP32 assina o tópico de comandos.
+- Cliente Python assina telemetria e publica comandos de teste.
+- O firmware ainda apenas exibe comandos recebidos no Monitor Serial.
+- Não há formato final de mensagem nem mecanismos criptográficos implementados.
 
-Próximo: especificar campos de telemetria e de comando em conjunto com firmware e cliente Python.
+## Definição que a equipe precisa concluir
+
+Especificar para os dois sentidos:
+1. ID do satélite de origem/destino.
+2. Tipo de mensagem.
+3. Dados úteis (telemetria, comando ou configuração).
+4. Campos de segurança (por exemplo, IV e tag HMAC).
+5. Tamanho e representação de cada campo.
+6. Regras de codificação, decodificação, autenticação, descriptografia e rejeição.
+
+O formato é livre, mas precisa ser documentado byte a byte.
+
+## Tamanho do payload
+
+O código atual mantém um limite de teste de 16 bytes. O PDF atualizado do PI 3T não declara esse limite explicitamente. Confirmar com o professor/equipe antes de fixá-lo como requisito do protocolo final; se mantido, os dados úteis e os campos de segurança precisam caber juntos nesse espaço.
