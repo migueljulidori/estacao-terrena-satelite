@@ -1,21 +1,19 @@
-# Cliente PC (estação terrena) — somente RX
+# Cliente PC (estação terrena) — MQTT bidirecional
 
 **Responsável: Manuela Lino**
 
-O cliente PC recebe a telemetria publicada pelo ESP32. O enlace é unidirecional: o ESP32 transmite (TX) e o PC recebe (RX); este componente não envia telecomandos.
+O cliente Python conecta ao broker Mosquitto, recebe telemetria/ACK do ESP32 e publica telecomandos. Ele também serve o painel web local, que acompanha as mensagens em tempo real.
 
-## Responsabilidades
+## Fluxo MQTT
 
-1. Conectar ao broker Mosquitto da estação terrena.
-2. Assinar `satellite/esp32-01/telemetry`.
-3. Interpretar o payload do projeto (limite atual: 16 bytes).
-4. Implementar a verificação HMAC e/ou descriptografia AES de acordo com o protocolo definido pela equipe.
-5. Rejeitar mensagens inválidas.
-6. Exibir os dados recebidos no cliente e no painel web.
+| Direção | Tópico | Operação do PC |
+|---|---|---|
+| ESP32 → PC | `satellite/esp32-01/telemetry` | Subscriber |
+| PC → ESP32 | `satellite/esp32-01/command` | Publisher |
 
-## Cliente MQTT em Python
+## Instalação
 
-### Instalação
+Na pasta `cliente-pc/`:
 
 ```bash
 python3 -m venv .venv
@@ -24,35 +22,58 @@ pip install -r requirements.txt
 cp mqtt_config.example.py mqtt_config.py
 ```
 
-Edite `mqtt_config.py` com o endereço do broker e as credenciais locais. Não versione esse arquivo nem compartilhe senhas.
+Edite `mqtt_config.py` com o IP real da máquina que executa o Mosquitto, usuário e senha do cliente `groundstation`. Se já existir um `mqtt_config.py` antigo, acrescente `TOPIC_COMMAND`, `WEB_HOST` e `WEB_PORT` conforme o exemplo (ou atualize-o a partir do exemplo). Nunca versione credenciais reais.
 
-### Execução
+## Executar cliente e painel
 
 ```bash
-python mqtt_client.py
+python3 mqtt_client.py
 ```
 
-O cliente aguarda mensagens do ESP. Use Ctrl+C para sair.
+Abra no navegador da própria máquina:
 
-## Painel web
+```
+http://127.0.0.1:8765
+```
 
-A interface está em `website/`:
+Mantenha o terminal aberto. O servidor local entrega o painel e recebe os eventos MQTT; não abra o HTML diretamente como arquivo.
 
-- `index.html`: estrutura do painel de monitoramento.
-- `style.css`: identidade visual e layout responsivo.
-- `script.js`: comportamento da interface.
-- `assets/terra-estacao.png`: imagem usada no painel.
+## Testes de telecomando
 
-### Como abrir
+Pelo painel, use os botões **PING**, **SOLICITAR STATUS** e o formulário de nome. Os comandos de texto aceitos pelo firmware atual são:
 
-Abra `website/index.html` em um navegador. Nesta etapa, o painel é uma interface estática: os números apresentados são valores demonstrativos e ainda não representam telemetria recebida pelo MQTT. A conexão entre o cliente Python e o painel, assim como a atualização em tempo real, ainda precisa ser implementada.
+- `PING`: testa o enlace; o ESP deve devolver ACK.
+- `STATUS`: solicita telemetria imediata e ACK.
+- `NOME=Alpha`: altera o nome do satélite; o firmware atual aceita até 11 caracteres nesse formato de texto (o comando inteiro precisa caber em 16 bytes).
 
-## Próximas etapas
+Também é possível publicar pelo terminal, em outra janela:
 
-- Validar a recepção MQTT no cliente Python usando o tópico oficial.
-- Definir o formato do payload com a equipe de protocolo.
-- Implementar interpretação e validação criptográfica.
-- Integrar os dados válidos ao painel web.
-- Exibir claramente o estado da conexão e mensagens rejeitadas.
+```bash
+mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' \
+  -t 'satellite/esp32-01/command' -m 'PING'
+```
 
-**Segurança:** não envie credenciais Wi-Fi, MQTT, SSH, chaves HMAC/AES ou arquivos locais de configuração ao Git.
+## O que o cliente interpreta
+
+O firmware atual envia pacotes de 16 bytes:
+
+- Tipo `0x01`: telemetria — ID, sequência, bateria, temperatura interna/externa, irradiação solar e início do nome.
+- Tipo `0x02`: ACK — ID, sequência, código do comando confirmado e início do nome.
+
+O painel atualiza os indicadores quando recebe telemetria e identifica ACKs no registro de mensagens. Pacotes com tamanho ou tipo inesperado são sinalizados como inválidos.
+
+## Limites desta etapa
+
+- Os valores gerados pelo firmware ainda são simulados.
+- HMAC/AES ainda não estão implementados; este cliente não declara autenticidade nem confidencialidade criptográfica.
+- A comunicação usa MQTT TCP na porta 1883, conforme a configuração atual da LAN de testes.
+- O painel escuta somente em `127.0.0.1`.
+
+## Diagnóstico rápido
+
+- **Conexão recusada/timeout:** confira se o Mosquitto está ativo, o IP/porta e se o PC está na mesma rede.
+- **Not authorized:** confira usuário/senha e ACL do broker. O usuário `groundstation` precisa de leitura em `telemetry` e escrita em `command`.
+- **Comando publicado, sem ACK:** confira se o ESP32 está conectado ao mesmo broker, inscrito em `command` e com o firmware bidirecional atualizado.
+- **Painel não atualiza:** acesse pelo endereço `http://127.0.0.1:8765` com o processo Python em execução.
+
+Encerre com Ctrl+C no terminal.
