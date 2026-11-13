@@ -2,27 +2,39 @@
 
 Projeto Integrado – Telecomunicações (3º Trimestre 2026).
 
-Simulação de uma estação terrena que se comunica com satélites (nós ESP32) por MQTT, com dimensionamento de enlace GEO e avaliação de segurança.
+Simulação de uma estação terrena que se comunica com um satélite simulado (ESP32) por MQTT, com dimensionamento de enlace GEO e avaliação de segurança.
 
-## Arquitetura
-- **Raspberry Pi:** estação terrena que hospeda o broker MQTT Mosquitto.
-- **ESP32:** satélite simulado; publica telemetria e recebe comandos.
-- **Computador com Python:** aplicação cliente MQTT; recebe telemetria e publica comandos.
-- **Broker:** Mosquitto. O PI 3T atualizado não exige substituição do broker.
-- **IP do broker:** endereço LAN real da Raspberry Pi, ainda a confirmar. O IP 192.168.30.52 é do ESP32.
+## Arquitetura atual
+
+- **Computador 1 (Linux):** hospeda o broker MQTT Mosquitto.
+- **Computador 2:** executa a aplicação Python da estação terrena, como cliente MQTT.
+- **ESP32:** representa o satélite simulado e também atua como cliente MQTT.
+- **Rede:** os três equipamentos precisam estar na mesma LAN ou possuir rota entre si.
+- **Broker:** Mosquitto, porta TCP 1883.
+- **IP do broker:** ainda precisa ser confirmado no computador Linux com `hostname -I`. Não confundir com o IP fixo do ESP32 (`192.168.30.52`).
+
+Não há Raspberry Pi na arquitetura atual.
 
 ## Status
-- Enlace MQTT bidirecional preparado no código: ESP32 publica telemetry e assina command; cliente Python assina telemetry e publica command.
-- Telemetria atual de teste: TESTE-N.
-- Comandos recebidos pelo ESP32 são exibidos no Monitor Serial; ainda não acionam hardware.
-- Próxima validação: configurar o IP real da Raspberry Pi no firmware e em cliente-pc/mqtt_config.py e testar os dois sentidos na rede isolada.
-- Próximas etapas do projeto: definir o protocolo de mensagens, implementar autenticação/integridade e confidencialidade, testar mensagens válidas/inválidas e concluir o link budget GEO.
 
-## Para a equipe
-1. CONTRIBUTING.md — fluxo de contribuição.
-2. EQUIPE.md — divisão de responsabilidades.
-3. ATUALIZACOES.md — histórico de mudanças.
-4. CONTEXTO.md — arquitetura, requisitos e estado atual.
+- Código preparado para comunicação MQTT bidirecional:
+  - ESP32 publica telemetria e assina comandos.
+  - Aplicação Python assina telemetria e publica comandos.
+- Tópicos:
+  - Telemetria: `satellite/esp32-01/telemetry`.
+  - Comandos: `satellite/esp32-01/command`.
+- Telemetria de teste: `TESTE-N`, enviada pelo ESP32 a cada 5 segundos.
+- Comandos recebidos são exibidos no Monitor Serial; ainda não acionam hardware.
+- **Pendente:** instalar/verificar o Mosquitto no computador Linux, confirmar seu IP LAN, configurar os clientes e validar os dois sentidos da comunicação.
+- A comunicação ainda não deve ser considerada validada fisicamente até a realização desses testes.
+
+## Documentação
+
+1. `estacao-terrena/README.md` — instalação e configuração do broker.
+2. `ATUALIZACOES.md` — histórico de mudanças.
+3. `CONTEXTO.md` — arquitetura, requisitos e estado atual.
+4. `EQUIPE.md` — divisão de responsabilidades.
 
 ## Segurança
-Não envie credenciais Wi-Fi, MQTT, SSH ou chaves criptográficas ao Git. Use arquivos locais ignorados pelo Git e modelos de configuração *.example. Faça os testes somente na rede isolada e nos dispositivos autorizados.
+
+Não envie credenciais Wi-Fi, MQTT, SSH ou chaves criptográficas ao Git. Use arquivos locais ignorados pelo Git e modelos `*.example`. MQTT na porta 1883 sem TLS deve ser usado somente na LAN isolada da equipe; não exponha o broker à internet.
