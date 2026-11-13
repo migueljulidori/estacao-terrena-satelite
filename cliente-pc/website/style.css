@@ -1,0 +1,478 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --background: #030d1b;
+    --panel: #06162a;
+    --panel-light: #0a1c32;
+    --border: #123b60;
+    --text: #e8f1fc;
+    --muted: #8ba9c9;
+    --blue: #42b9f5;
+    --green: #36dfb0;
+    --yellow: #f0ad42;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--background);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+}
+
+.topbar {
+    min-height: 82px;
+    padding: 0 3%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #071528;
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.brand-symbol {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--blue);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--blue);
+    font-size: 27px;
+}
+
+.brand h1 {
+    font-size: 20px;
+    letter-spacing: 3px;
+}
+
+.brand p {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-top: 5px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.status {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    background: var(--yellow);
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.clock {
+    color: var(--muted);
+    font-size: 11px;
+    border-left: 1px solid var(--border);
+    padding-left: 20px;
+}
+
+main {
+    width: 94%;
+    max-width: 1600px;
+    margin: 26px auto;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 45% 55%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--panel);
+}
+
+.earth-panel {
+    position: relative;
+    min-height: 370px;
+    overflow: hidden;
+    background: #020d1c;
+    border-right: 1px solid var(--border);
+}
+
+.earth-panel img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+    object-position: center;
+}
+
+.coordinates {
+    position: absolute;
+    top: 35px;
+    left: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #a9d5ff;
+    font-size: 11px;
+    text-shadow: 0 1px 4px #001;
+}
+
+.monitor-panel {
+    padding: 27px 25px 18px;
+    min-width: 0;
+}
+
+.mission-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 23px;
+    border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+    color: var(--blue);
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.mission-heading h2 {
+    font-size: 27px;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.mission-id {
+    border: 1px solid var(--blue);
+    border-radius: 5px;
+    padding: 11px 17px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 110px;
+}
+
+.mission-id span {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.mission-id strong {
+    font-size: 17px;
+    letter-spacing: 1px;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.section-heading h3 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+}
+
+.section-heading > span {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.monitor-panel > .section-heading {
+    margin-top: 19px;
+}
+
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 11px;
+}
+
+.data-card {
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px 13px;
+    min-width: 0;
+}
+
+.card-icon {
+    display: block;
+    color: var(--blue);
+    font-size: 23px;
+    margin-bottom: 9px;
+}
+
+.data-card p {
+    color: var(--muted);
+    font-size: 9px;
+    min-height: 22px;
+}
+
+.data-card strong {
+    display: block;
+    font-size: 23px;
+    margin: 7px 0;
+    white-space: nowrap;
+}
+
+.data-card small {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.progress {
+    height: 6px;
+    background: #173453;
+    border-radius: 5px;
+    margin-top: 17px;
+    overflow: hidden;
+}
+
+.progress span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #399eea, #4bd5e4);
+    border-radius: 5px;
+}
+
+.lower-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 19px 21px;
+}
+
+.communication-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 19px;
+}
+
+.communication-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 5px 13px;
+    min-width: 0;
+}
+
+.communication-item + .communication-item {
+    border-left: 1px solid var(--border);
+    padding-left: 22px;
+}
+
+.communication-icon {
+    color: var(--blue);
+    font-size: 24px;
+}
+
+.communication-item p {
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 7px;
+}
+
+.communication-item strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+th, td {
+    text-align: left;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+}
+
+th {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 500;
+    background: var(--panel-light);
+}
+
+td {
+    color: #c8d9ec;
+}
+
+.ok {
+    color: var(--green);
+    white-space: nowrap;
+}
+
+.payload-panel {
+    margin-top: 18px;
+}
+
+.payload-content {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 20px;
+}
+
+.payload-main p {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-bottom: 9px;
+}
+
+pre {
+    min-height: 90px;
+    background: #020c19;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px;
+    color: var(--green);
+    font-family: monospace;
+    font-size: 11px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.payload-status {
+    border-left: 1px solid var(--border);
+    padding: 15px;
+    color: var(--yellow);
+}
+
+.waiting-icon {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+.payload-status strong {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.payload-status p {
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 17px;
+}
+
+footer {
+    border-top: 1px solid var(--border);
+    padding: 18px 3%;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 1050px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .earth-panel {
+        min-height: 350px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .lower-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .topbar {
+        flex-wrap: wrap;
+        padding: 15px 5%;
+        gap: 15px;
+    }
+
+    .header-right {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    main {
+        width: 92%;
+    }
+
+    .monitor-panel {
+        padding: 20px 14px;
+    }
+
+    .mission-heading h2 {
+        font-size: 21px;
+    }
+
+    .telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .communication-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .communication-item + .communication-item {
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding: 15px 13px 0;
+    }
+
+    .payload-content {
+        grid-template-columns: 1fr;
+    }
+
+    .payload-status {
+        border-left: none;
+        border-top: 1px solid var(--border);
+    }
+
+    footer {
+        flex-direction: column;
+        gap: 9px;
+    }
+}
