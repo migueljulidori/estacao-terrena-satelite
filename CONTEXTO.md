@@ -44,7 +44,8 @@ Cliente Python deve verificar e rejeitar mensagens inválidas. Chaves: gerar, gu
 
 1. **Wi-Fi** ✓ — IP `192.168.30.52`
 2. **MQTT** ✓ — connect + publish + subscribe comando
-3. **Gerar dados** ✓ — telemetria simulada 16 B (`dados_mod.h`; ver `docs/protocolo/`)
+3. **Gerar dados** ✓ — telemetria simulada (`dados_mod.h`)
+3b. **Comandos RX** ✓ — `comando_mod.h` (PING / STATUS / INT=n + binário)
 4. **Criptografia** ← próxima
 5. **Montar pacote** — pendente
 6. **Publicar** — já usado; versão final com segurança depois
@@ -70,8 +71,8 @@ Código ESP (Arduino) + cliente Python, fluxogramas, especificação do protocol
 | Tópico comando | `satellite/esp32-01/command` |
 | Broker | Mosquitto (IP no ESP: `mqtt_broker`) |
 | Autenticação / cripto | HMAC-SHA256 + AES-CBC (planejado) |
-| Progresso firmware | Wi-Fi + MQTT TX/RX + telemetria simulada |
-| Layout telemetria | `docs/protocolo/README.md` (provisório) |
+| Progresso firmware | Bidirecional: telemetria TX + comandos RX interpretados |
+| Layout TX/RX | `docs/protocolo/README.md` (provisório) |
 
 ## Fontes
 

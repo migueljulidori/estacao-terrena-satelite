@@ -1,4 +1,4 @@
-# Protocolo — telemetria ESP (provisório)
+# Protocolo ESP — bidirecional (provisório)
 
 ## Tópicos
 
@@ -7,17 +7,42 @@
 | ESP → estação | `satellite/esp32-01/telemetry` |
 | Estação → ESP | `satellite/esp32-01/command` |
 
-## Payload de telemetria (16 bytes) — firmware atual
+## Telemetria / ACK (ESP → estação) — 16 bytes
 
-| Offset | Tamanho | Campo | Notas |
-|--------|---------|--------|------|
-| 0 | 1 | `sat_id` | `1` = SAT-01 |
-| 1 | 1 | `tipo` | `0x01` telemetria |
-| 2 | 1 | `seq` | 0..255 |
-| 3 | 1 | `bateria` | % |
-| 4 | 2 | `temp_int` | °C × 10, int16 little-endian |
-| 6 | 2 | `temp_ext` | °C × 10, int16 little-endian |
-| 8 | 2 | `solar` | uint16 LE (unidade a definir) |
-| 10 | 6 | reservado | zeros; futuro HMAC/IV |
+| Offset | Campo | Notas |
+|--------|--------|------|
+| 0 | `sat_id` | `1` = SAT-01 |
+| 1 | `tipo` | `0x01` telemetria · `0x02` ACK |
+| 2 | `seq` | |
+| 3 | bateria % **ou** cmd de origem (se ACK) | |
+| 4–5 | temp. interna (°C×10, int16 LE) | telemetria |
+| 6–7 | temp. externa (°C×10, int16 LE) | telemetria |
+| 8–9 | solar (uint16 LE) | telemetria |
+| 10–15 | reservado | segurança depois |
 
-Ainda **sem** criptografia. Equipe pode alterar este layout antes da etapa de segurança.
+## Comando (estação → ESP) — até 16 bytes
+
+### Binário
+
+| Offset | Campo |
+|--------|--------|
+| 0 | `sat_id` (`1` ou `0` = todos) |
+| 1 | `cmd` |
+| 2 | `seq` |
+| 3 | `param0` |
+
+| `cmd` | Nome | Efeito |
+|-------|------|--------|
+| `0x10` | PING | publica ACK |
+| `0x11` | SET_INTERVAL | `param0` = segundos (1..60) do TX |
+| `0x12` | STATUS | força telemetria agora + ACK |
+
+### Texto (teste rápido)
+
+```bash
+mosquitto_pub -h IP -t 'satellite/esp32-01/command' -m 'PING'
+mosquitto_pub -h IP -t 'satellite/esp32-01/command' -m 'STATUS'
+mosquitto_pub -h IP -t 'satellite/esp32-01/command' -m 'INT=3'
+```
+
+(Use `-u` / `-P` se o broker exigir senha.)

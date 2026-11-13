@@ -36,6 +36,17 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-13 — Interpreta comandos no ESP (bidirecional PI 3T)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `comando_mod.h`, `mqtt_mod.h`, `satelite.ino`, `docs/protocolo/`
+- **O que mudou:**
+  - Módulo `comando_mod.h`: PING, STATUS, SET_INTERVAL (binário e texto)
+  - ACK na telemetria (`tipo=0x02`); intervalo de TX configurável
+- **Por quê:** completar enlace bidirecional antes da criptografia
+- **Como testar / impacto:** `mosquitto_pub ... -t command -m 'PING'` → Serial + ACK no tópico telemetry
+
 ### 2026-11-13 — Gera telemetria simulada no ESP (16 bytes)
 
 - **Autor(es):** Miguel Julidori

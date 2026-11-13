@@ -1,18 +1,20 @@
 /*
  * Satélite ESP32 — orquestra os módulos
- * PI 3T: enlace bidirecional (telemetria TX + comando RX)
+ * PI 3T: bidirecional (telemetria TX + comando RX)
  *
- *   wifi_mod.h  — Wi-Fi
- *   mqtt_mod.h  — MQTT (publish + subscribe)
- *   dados_mod.h — gerar / enviar telemetria
+ *   wifi_mod.h    — Wi-Fi
+ *   mqtt_mod.h    — MQTT
+ *   dados_mod.h   — telemetria
+ *   comando_mod.h — interpreta comandos da estação
  *
- * Próximas: criptografia → montar pacote
+ * Próxima: criptografia
  * Biblioteca: PubSubClient | Serial: 115200
  */
 
 #include "wifi_mod.h"
 #include "mqtt_mod.h"
 #include "dados_mod.h"
+#include "comando_mod.h"
 
 unsigned long ultimoEnvio = 0;
 
@@ -20,7 +22,7 @@ void setup() {
   Serial.begin(115200);
   delay(500);
 
-  Serial.println("Satelite ESP32 — telemetria + comando");
+  Serial.println("Satelite ESP32 — telemetria + comandos");
   wifiConectar();
   mqttConectar();
   ultimoEnvio = millis();
@@ -36,7 +38,8 @@ void loop() {
 
   mqttManter();
 
-  if (millis() - ultimoEnvio >= 5000) {
+  bool forcar = comandoConsumirForcarTx();
+  if (forcar || (millis() - ultimoEnvio >= comandoIntervaloMs())) {
     ultimoEnvio = millis();
     dadosEnviar();
   }
