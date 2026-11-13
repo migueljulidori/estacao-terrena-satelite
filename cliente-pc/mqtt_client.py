@@ -1,11 +1,8 @@
 """
 Aplicação da estação terrena — cliente MQTT bidirecional.
-
-- recebe telemetria do ESP32 (subscribe / RX);
-- envia comandos ao ESP32 (publish / TX);
-- valida o tamanho provisório de 1 a 16 bytes, conforme o firmware de teste.
+Recebe telemetria (subscribe/RX) e envia comandos (publish/TX).
+O limite de 16 bytes é provisório e herdado do firmware de teste.
 """
-
 import sys
 import paho.mqtt.client as mqtt
 
@@ -31,28 +28,24 @@ def on_connect(client, userdata, flags, reason_code, properties):
 
 def on_message(client, userdata, message):
     payload = message.payload
-    print("\n" + "=" * 52)
+    print()
+    print("=" * 52)
     print(f"TELEMETRIA recebida | tópico: {message.topic}")
     print(f"Tamanho: {len(payload)} byte(s)")
     print(f"HEX: {payload.hex(' ')}")
-
     if len(payload) == 0 or len(payload) > config.MAX_PAYLOAD_BYTES:
         print("MENSAGEM REJEITADA: tamanho fora do intervalo provisório.")
         print("=" * 52)
         return
-
     try:
         print(f"Texto: {payload.decode('utf-8')}")
     except UnicodeDecodeError:
         print("Texto: conteúdo binário (não UTF-8).")
-
     print("=" * 52)
 
 
 def publicar_comando(client, texto):
-    """Publica comando UTF-8 respeitando o limite provisório do firmware."""
     payload = texto.encode("utf-8")
-
     if not payload:
         print("Comando vazio: nada foi enviado.")
         return
@@ -63,7 +56,6 @@ def publicar_comando(client, texto):
     if not client.is_connected():
         print("Não conectado ao broker. Comando não enviado.")
         return
-
     info = client.publish(config.TOPIC_COMMAND, payload, qos=0, retain=False)
     if info.rc == mqtt.MQTT_ERR_SUCCESS:
         info.wait_for_publish(timeout=5)
@@ -85,21 +77,18 @@ def main():
     client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
     client.on_connect = on_connect
     client.on_message = on_message
-
     print(f"Conectando ao broker {config.BROKER_HOST}:{config.BROKER_PORT}...")
     try:
         client.connect(config.BROKER_HOST, config.BROKER_PORT, keepalive=30)
     except OSError as error:
         print(f"Não foi possível conectar ao broker: {error}")
         sys.exit(1)
-
     client.loop_start()
-    print("\nEstação terrena pronta.")
+    print("Estação terrena pronta.")
     print("Recebendo telemetria continuamente.")
     print("Digite um comando para enviar ao ESP32 (ex.: PING ou STATUS).")
     print("O limite atual de 16 bytes é provisório e precisa ser confirmado.")
-    print("Digite /sair para encerrar.\n")
-
+    print("Digite /sair para encerrar.")
     try:
         while True:
             try:
@@ -111,7 +100,7 @@ def main():
             if comando:
                 publicar_comando(client, comando)
     except KeyboardInterrupt:
-        print("\nEncerrando aplicação...")
+        print("Encerrando aplicação...")
     finally:
         client.loop_stop()
         client.disconnect()
