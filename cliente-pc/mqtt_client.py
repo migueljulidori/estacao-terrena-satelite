@@ -235,6 +235,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
         return
 
 
+class DashboardServer(ThreadingHTTPServer):
+    daemon_threads = True
+
+
 def main():
     global mqtt_client
     mqtt_client = mqtt.Client(
