@@ -476,3 +476,73 @@ footer {
         gap: 9px;
     }
 }
+
+
+/* Controles de telecomando */
+.command-panel {
+    margin-top: 18px;
+}
+
+.command-help {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+.command-help code {
+    color: var(--blue);
+    overflow-wrap: anywhere;
+}
+
+.command-buttons,
+.name-form {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.command-buttons {
+    margin-bottom: 18px;
+}
+
+.command-panel button {
+    border: 1px solid var(--blue);
+    border-radius: 5px;
+    padding: 11px 16px;
+    background: #0a2945;
+    color: var(--text);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    cursor: pointer;
+}
+
+.command-panel button:hover {
+    background: #10436b;
+}
+
+.name-form label {
+    display: block;
+    flex-basis: 100%;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.name-form input {
+    min-width: 220px;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: #020c19;
+    color: var(--text);
+    font: inherit;
+}
+
+#command-feedback {
+    margin-top: 14px;
+    color: var(--green);
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
