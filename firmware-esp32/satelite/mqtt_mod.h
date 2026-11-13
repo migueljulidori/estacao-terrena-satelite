@@ -13,14 +13,41 @@ const char *mqtt_id = "SAT-01";
 const char *mqtt_user = "satellite";
 const char *mqtt_senha = "emmj";
 
-// ESP só publica (TX). PC só assina este tópico (RX).
-const char *topico_telemetria = "satellite/esp32-01/telemetry";
+// Enlace bidirecional (PI 3T)
+const char *topico_telemetria = "satellite/esp32-01/telemetry";  // ESP → estação
+const char *topico_comando = "satellite/esp32-01/command";       // estação → ESP
 
 WiFiClient wifi;
 PubSubClient mqtt(wifi);
 
+void aoReceberComando(char *topico, byte *payload, unsigned int tamanho) {
+  Serial.print("RX comando | ");
+  Serial.println(topico);
+
+  if (tamanho > 16) {
+    Serial.println("Rejeitado: mais de 16 bytes");
+    return;
+  }
+
+  Serial.print("HEX: ");
+  for (unsigned int i = 0; i < tamanho; i++) {
+    if (payload[i] < 0x10) Serial.print("0");
+    Serial.print(payload[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
+
+  Serial.print("TXT: ");
+  for (unsigned int i = 0; i < tamanho; i++) {
+    char c = (char)payload[i];
+    Serial.print((c >= 32 && c <= 126) ? c : '.');
+  }
+  Serial.println();
+}
+
 void mqttConectar() {
   mqtt.setServer(mqtt_broker, mqtt_porta);
+  mqtt.setCallback(aoReceberComando);
 
   while (!mqtt.connected()) {
     Serial.print("MQTT ");
@@ -28,7 +55,10 @@ void mqttConectar() {
     Serial.print("...");
 
     if (mqtt.connect(mqtt_id, mqtt_user, mqtt_senha)) {
-      Serial.println(" OK (publish only)");
+      Serial.println(" OK (TX+RX)");
+      mqtt.subscribe(topico_comando);
+      Serial.print("Inscrito: ");
+      Serial.println(topico_comando);
     } else {
       Serial.print(" falhou rc=");
       Serial.println(mqtt.state());
@@ -49,7 +79,7 @@ bool mqttOk() {
   return mqtt.connected();
 }
 
-// Publica no tópico de telemetria (máx. 16 bytes)
+// Publica telemetria (máx. 16 bytes nesta etapa de teste)
 bool mqttPublicar(const uint8_t *dados, unsigned int tam) {
   if (!mqtt.connected()) {
     return false;
@@ -62,4 +92,3 @@ bool mqttPublicar(const uint8_t *dados, unsigned int tam) {
 }
 
 #endif
-

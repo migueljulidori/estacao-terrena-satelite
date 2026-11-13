@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include "mqtt_mod.h"
 
-// Módulo de dados: por enquanto só um teste de comunicação (TX).
-// Depois: telemetria real → criptografia → montar pacote → publicar.
+// Módulo de dados: teste de telemetria (TX).
+// Depois: telemetria real → criptografia → montar pacote.
 
 void dadosEnviarTeste() {
   static uint8_t contador = 0;

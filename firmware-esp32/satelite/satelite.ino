@@ -1,10 +1,10 @@
 /*
  * Satélite ESP32 — orquestra os módulos
- * Ordem: Wi-Fi → MQTT → dados → criptografia → pacote → publicar
+ * PI 3T: enlace bidirecional (telemetria TX + comando RX)
  *
  *   wifi_mod.h  — Wi-Fi
- *   mqtt_mod.h  — MQTT
- *   dados_mod.h — envio de dados (teste agora)
+ *   mqtt_mod.h  — MQTT (publish + subscribe)
+ *   dados_mod.h — envio de telemetria (teste)
  *
  * Biblioteca: PubSubClient | Serial: 115200
  */
@@ -19,7 +19,7 @@ void setup() {
   Serial.begin(115200);
   delay(500);
 
-  Serial.println("Satelite ESP32 — Wi-Fi + MQTT + dados teste");
+  Serial.println("Satelite ESP32 — bidirecional (TX telemetria / RX comando)");
   wifiConectar();
   mqttConectar();
   ultimoEnvio = millis();
@@ -35,7 +35,6 @@ void loop() {
 
   mqttManter();
 
-  // A cada 5 s: envia mensagem de teste (ver comunicação)
   if (millis() - ultimoEnvio >= 5000) {
     ultimoEnvio = millis();
     dadosEnviarTeste();

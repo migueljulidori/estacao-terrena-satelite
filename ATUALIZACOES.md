@@ -36,6 +36,18 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-13 — Alinha firmware ESP ao PI 3T (enlace bidirecional)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `firmware-esp32/`, `CONTEXTO.md`, `docs/referencia/`
+- **O que mudou:**
+  - PDF `PI_3T_Sistema_Comunicacao_Satelite.pdf` em `docs/referencia/`
+  - ESP publica telemetria de teste e assina `command` (RX)
+  - CONTEXTO atualizado para bidirecional (PI 3T)
+- **Por quê:** enunciado exige satélite ↔ estação nos dois sentidos
+- **Como testar / impacto:** gravar ESP; Serial mostra TX `TESTE-N` e RX de comando no tópico `command`
+
 ### 2026-11-12 — Módulo de dados com publish de teste
 
 - **Autor(es):** Miguel Julidori

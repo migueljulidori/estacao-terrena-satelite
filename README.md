@@ -14,10 +14,10 @@ Este repositório é compartilhado. Cada pessoa deve **assumir uma parte** e env
 
 ## Status atual
 
-- **Enlace:** ESP só **TX** (publish); PC só **RX** (subscribe) — sem telecomando
-- **Miguel — ESP32:** Wi-Fi + MQTT connect em [`firmware-esp32/`](firmware-esp32/)
-- **Broker / cliente PC:** `estacao-terrena/`, `cliente-pc/`
-- **Pendente:** IP do broker, gerar dados, cripto, pacote, publish — veja [`EQUIPE.md`](EQUIPE.md)
+- **Enlace (PI 3T):** bidirecional — ESP TX telemetria / RX comando
+- **Miguel — ESP32:** Wi-Fi + MQTT TX/RX + teste em [`firmware-esp32/`](firmware-esp32/)
+- **Pendente no firmware:** telemetria real, cripto, pacote — veja [`EQUIPE.md`](EQUIPE.md)
+- **Enunciado:** [`docs/referencia/PI_3T_Sistema_Comunicacao_Satelite.pdf`](docs/referencia/PI_3T_Sistema_Comunicacao_Satelite.pdf)
 
 ## Estrutura
 
