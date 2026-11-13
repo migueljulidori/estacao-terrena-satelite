@@ -147,6 +147,7 @@ def on_message(client, userdata, message):
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
     def _json(self, status, body):
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
@@ -254,7 +255,7 @@ def main():
         sys.exit(1)
 
     mqtt_client.loop_start()
-    server = ThreadingHTTPServer((WEB_HOST, WEB_PORT), DashboardHandler)
+    server = DashboardServer((WEB_HOST, WEB_PORT), DashboardHandler)
     print(f"Painel: http://{WEB_HOST}:{WEB_PORT}")
     print(f"Publisher de comandos: {TOPIC_COMMAND}")
     print("Pressione Ctrl+C para encerrar.")
