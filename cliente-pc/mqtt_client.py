@@ -1,11 +1,9 @@
 """
-Cliente da estação terrena: MQTT bidirecional + painel web local.
+Cliente da estação terrena: MQTT bidirecional, AES/HMAC e painel web.
 
-- recebe e decodifica telemetria/ACK do ESP32;
-- publica PING, STATUS e NOME=... no tópico de comandos;
-- serve o painel e atualiza o navegador via Server-Sent Events.
+O contrato criptográfico espelha firmware-esp32/satelite/cripto_mod.h da main:
+16 bytes de ciphertext = AES-128-CBC(tipo|seq|dados[6]|HMAC[8]).
 """
-
 import json
 import mimetypes
 import queue
@@ -16,6 +14,11 @@ from pathlib import Path
 from urllib.parse import unquote
 
 import paho.mqtt.client as mqtt
+
+from crypto_protocol import (
+    CryptoError, TYPE_ACK, TYPE_PING, TYPE_SET_NAME, TYPE_STATUS,
+    TYPE_TELEMETRY, open_packet, seal_packet,
+)
 
 try:
     import mqtt_config as config
@@ -28,9 +31,12 @@ TOPIC_COMMAND = getattr(config, "TOPIC_COMMAND", "satellite/esp32-01/command")
 WEB_HOST = getattr(config, "WEB_HOST", "127.0.0.1")
 WEB_PORT = getattr(config, "WEB_PORT", 8765)
 MAX_PAYLOAD_BYTES = getattr(config, "MAX_PAYLOAD_BYTES", 16)
+AES_KEY = getattr(config, "AES_KEY", "").encode("ascii") if config else b""
+HMAC_KEY = getattr(config, "HMAC_KEY", "").encode("ascii") if config else b""
 subscribers = []
 subscribers_lock = threading.Lock()
 mqtt_client = None
+command_sequence = 0
 
 
 def broadcast(event):
@@ -48,60 +54,65 @@ def broadcast(event):
                 pass
 
 
-def decode_packet(payload):
-    """Decodifica o layout provisório de 16 bytes de firmware-esp32."""
+def decode_packet(payload, aes_key=None, hmac_key=None):
+    """Decifra AES-CBC e valida HMAC antes de interpretar os campos."""
+    aes_key = AES_KEY if aes_key is None else aes_key
+    hmac_key = HMAC_KEY if hmac_key is None else hmac_key
     if len(payload) != MAX_PAYLOAD_BYTES:
-        return {"valid": False, "error": f"Payload deve ter {MAX_PAYLOAD_BYTES} bytes."}
+        return {"valid": False, "error": f"Ciphertext deve ter {MAX_PAYLOAD_BYTES} bytes."}
+    try:
+        kind, sequence, data = open_packet(payload, aes_key, hmac_key)
+    except CryptoError as error:
+        return {"valid": False, "error": str(error)}
 
-    sat_id, kind, sequence, value = payload[:4]
-    name = payload[10:16].split(b"\0", 1)[0].decode("ascii", errors="replace")
-
-    if kind == 0x01:
-        temp_internal = int.from_bytes(payload[4:6], "little", signed=True) / 10
-        temp_external = int.from_bytes(payload[6:8], "little", signed=True) / 10
-        solar = int.from_bytes(payload[8:10], "little", signed=False)
+    if kind == TYPE_TELEMETRY:
+        battery = data[0]
+        temp_internal = int.from_bytes(data[1:3], "little", signed=True) / 10
+        temp_external = int.from_bytes(data[3:5], "little", signed=True) / 10
+        solar = data[5] * 4
         return {
-            "valid": True,
-            "type": "telemetry",
-            "sat_id": sat_id,
-            "sequence": sequence,
-            "battery": value,
-            "temp_internal": temp_internal,
-            "temp_external": temp_external,
-            "solar": solar,
-            "name": name or "SAT-01",
+            "valid": True, "type": "telemetry", "sat_id": 1,
+            "sequence": sequence, "battery": battery,
+            "temp_internal": temp_internal, "temp_external": temp_external,
+            "solar": solar, "name": "SAT-01",
+            "security": "AES-128-CBC + HMAC-SHA256 OK",
         }
 
-    if kind == 0x02:
-        command_names = {0x10: "PING", 0x12: "STATUS", 0x13: "SET_NOME"}
+    if kind == TYPE_ACK:
+        command_names = {TYPE_PING: "PING", TYPE_STATUS: "STATUS", TYPE_SET_NAME: "SET_NOME"}
+        name = data[1:6].split(b"\0", 1)[0].decode("ascii", errors="replace")
         return {
-            "valid": True,
-            "type": "ack",
-            "sat_id": sat_id,
-            "sequence": sequence,
-            "command": command_names.get(value, f"0x{value:02X}"),
+            "valid": True, "type": "ack", "sat_id": 1, "sequence": sequence,
+            "command": command_names.get(data[0], f"0x{data[0]:02X}"),
             "name": name or "SAT-01",
+            "security": "AES-128-CBC + HMAC-SHA256 OK",
         }
 
     return {"valid": False, "error": f"Tipo de pacote desconhecido: 0x{kind:02X}"}
 
 
 def validate_command(command):
+    """Converte o texto da interface para tipo e seis bytes de dados do protocolo."""
     command = command.strip()
-    try:
-        encoded = command.encode("ascii")
-    except UnicodeEncodeError:
-        return None, "Use somente caracteres ASCII no comando."
-    if not encoded or len(encoded) > MAX_PAYLOAD_BYTES:
-        return None, f"O comando deve ter entre 1 e {MAX_PAYLOAD_BYTES} bytes."
     upper = command.upper()
-    if upper not in ("PING", "STATUS") and not upper.startswith("NOME="):
-        return None, "Comandos aceitos: PING, STATUS ou NOME=nome."
-    if upper.startswith("NOME=") and len(command[5:].strip()) == 0:
-        return None, "Informe um nome depois de NOME=."
-    if any(ord(char) < 32 or ord(char) > 126 for char in command):
-        return None, "O comando contém caracteres não imprimíveis."
-    return encoded, None
+    if upper == "PING":
+        return TYPE_PING, bytes(6), None
+    if upper == "STATUS":
+        return TYPE_STATUS, bytes(6), None
+    if upper.startswith("NOME="):
+        name = command[5:].strip()
+        try:
+            encoded = name.encode("ascii")
+        except UnicodeEncodeError:
+            return None, None, "O nome deve usar somente caracteres ASCII."
+        if not encoded:
+            return None, None, "Informe um nome depois de NOME=."
+        if len(encoded) > 6:
+            return None, None, "O protocolo binário permite nomes de até 6 caracteres."
+        if any(byte < 32 or byte > 126 for byte in encoded):
+            return None, None, "O nome contém caracteres não imprimíveis."
+        return TYPE_SET_NAME, encoded.ljust(6, b"\0"), None
+    return None, None, "Comandos aceitos: PING, STATUS ou NOME=nome (até 6 caracteres)."
 
 
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -123,29 +134,20 @@ def on_disconnect(client, userdata, disconnect_flags, reason_code, properties):
 def on_message(client, userdata, message):
     payload = message.payload
     print(f"RX {message.topic} | {len(payload)} byte(s) | {payload.hex(' ')}")
-
-    if len(payload) > MAX_PAYLOAD_BYTES:
-        event = {
-            "event": "message",
-            "valid": False,
-            "topic": message.topic,
-            "hex": payload.hex(" "),
-            "error": f"Mensagem rejeitada: excede {MAX_PAYLOAD_BYTES} bytes.",
-        }
-        broadcast(event)
-        return
-
     decoded = decode_packet(payload)
+    if not decoded["valid"]:
+        print(f"Mensagem rejeitada: {decoded['error']}")
+    else:
+        print(f"Mensagem autenticada e decifrada: {decoded.get('type')} seq={decoded.get('sequence')}")
     broadcast({
-        "event": "message",
-        "topic": message.topic,
-        "hex": payload.hex(" "),
-        **decoded,
+        "event": "message", "topic": message.topic,
+        "hex": payload.hex(" "), **decoded,
     })
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
+
     def _json(self, status, body):
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
@@ -166,8 +168,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 subscribers.append(channel)
             connected = mqtt_client is not None and mqtt_client.is_connected()
             channel.put_nowait(json.dumps({
-                "event": "connection",
-                "connected": connected,
+                "event": "connection", "connected": connected,
                 "message": "Conectado ao broker MQTT" if connected else "Aguardando conexão MQTT",
             }, ensure_ascii=False))
             try:
@@ -207,6 +208,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_POST(self):
+        global command_sequence
         if self.path != "/api/command":
             self.send_error(404)
             return
@@ -216,26 +218,28 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 self._json(400, {"ok": False, "error": "Requisição inválida."})
                 return
             body = json.loads(self.rfile.read(size).decode("utf-8"))
-            command = body.get("command", "")
-            payload, error = validate_command(command)
+            kind, data, error = validate_command(body.get("command", ""))
             if error:
                 self._json(400, {"ok": False, "error": error})
                 return
             if mqtt_client is None or not mqtt_client.is_connected():
                 self._json(503, {"ok": False, "error": "Cliente MQTT não está conectado."})
                 return
-            result = mqtt_client.publish(TOPIC_COMMAND, payload, qos=0, retain=False)
+            ciphertext = seal_packet(kind, command_sequence, data, AES_KEY, HMAC_KEY)
+            result = mqtt_client.publish(TOPIC_COMMAND, ciphertext, qos=0, retain=False)
             if result.rc != mqtt.MQTT_ERR_SUCCESS:
                 self._json(503, {"ok": False, "error": "Falha ao publicar o comando MQTT."})
                 return
-            print(f"TX {TOPIC_COMMAND} | {payload.decode('ascii')}")
-            broadcast({"event": "command", "command": payload.decode("ascii"), "sent": True})
-            self._json(200, {"ok": True, "topic": TOPIC_COMMAND, "command": payload.decode("ascii")})
-        except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
-            self._json(400, {"ok": False, "error": "JSON inválido."})
+            sequence_sent = command_sequence
+            command_sequence = (command_sequence + 1) & 0xFF
+            command_label = {TYPE_PING: "PING", TYPE_STATUS: "STATUS", TYPE_SET_NAME: "SET_NOME"}[kind]
+            print(f"TX {TOPIC_COMMAND} | AES+HMAC | seq={sequence_sent} | {ciphertext.hex(' ')}")
+            broadcast({"event": "command", "command": command_label, "sent": True})
+            self._json(200, {"ok": True, "topic": TOPIC_COMMAND, "command": command_label})
+        except (ValueError, UnicodeDecodeError, json.JSONDecodeError, CryptoError) as error:
+            self._json(400, {"ok": False, "error": str(error) or "JSON inválido."})
 
     def log_message(self, format, *args):
-        # Mantém o terminal focado nos eventos MQTT.
         return
 
 
@@ -246,9 +250,13 @@ class DashboardServer(ThreadingHTTPServer):
 def main():
     global mqtt_client
     if config is None:
-        print("Arquivo mqtt_config.py nao encontrado.")
-        print("Copie mqtt_config.example.py para mqtt_config.py e configure o broker.")
+        print("Arquivo mqtt_config.py não encontrado.")
+        print("Copie mqtt_config.example.py para mqtt_config.py e configure o broker e as chaves.")
         sys.exit(1)
+    if len(AES_KEY) != 16 or len(HMAC_KEY) != 16:
+        print("Configure AES_KEY e HMAC_KEY com exatamente 16 caracteres ASCII em mqtt_config.py.")
+        sys.exit(1)
+
     mqtt_client = mqtt.Client(
         mqtt.CallbackAPIVersion.VERSION2,
         client_id=config.CLIENT_ID,
@@ -269,7 +277,7 @@ def main():
     mqtt_client.loop_start()
     server = DashboardServer((WEB_HOST, WEB_PORT), DashboardHandler)
     print(f"Painel: http://{WEB_HOST}:{WEB_PORT}")
-    print(f"Publisher de comandos: {TOPIC_COMMAND}")
+    print(f"Publisher criptográfico: {TOPIC_COMMAND}")
     print("Pressione Ctrl+C para encerrar.")
 
     try:
