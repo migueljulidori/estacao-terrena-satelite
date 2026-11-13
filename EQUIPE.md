@@ -35,7 +35,8 @@ Detalhes: `firmware-esp32/README.md` (só avançar a próxima etapa quando a atu
 ### `cliente-pc/` (Manuela — em andamento)
 
 - Conectar ao broker MQTT da estação
-- Assinar `satellite/esp32-01/telemetry` para receber telemetria e ACK\n- Publicar `PING`, `STATUS` e `NOME=...` em `satellite/esp32-01/command`
+- Assinar `satellite/esp32-01/telemetry` para receber telemetria e ACK
+- Publicar `PING`, `STATUS` e `NOME=...` em `satellite/esp32-01/command`
 - Interpretar o payload de até 16 bytes
 - Verificar HMAC e/ou descriptografar AES, conforme o protocolo definido
 - Rejeitar mensagens inválidas e apresentar os dados recebidos
