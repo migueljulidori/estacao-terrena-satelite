@@ -1,3 +1,17 @@
+### 2026-11-13 — Cliente PC bidirecional e painel conectado ao MQTT
+
+- **Autor(es):** Manuela Lino
+- **Branch / PR:** `feature/cliente-pc-manuela`
+- **Áreas:** `cliente-pc/mqtt_client.py`, `cliente-pc/mqtt_config.example.py`, `cliente-pc/website/`, `cliente-pc/README.md`
+- **O que mudou:**
+  - Cliente Python assina telemetria, decodifica os pacotes de 16 bytes e publica PING, STATUS e NOME=... no tópico de comando.
+  - Servidor HTTP local integra MQTT ao painel por eventos em tempo real e recebe telecomandos enviados pela interface.
+  - Painel deixa de exibir valores demonstrativos como se fossem telemetria e passa a atualizar os campos com dados recebidos.
+- **Por quê:** permitir testar os dois sentidos do enlace ESP32 ↔ estação com o firmware bidirecional atual.
+- **Como testar / impacto:** instalar `requirements.txt`, configurar `mqtt_config.py`, executar `python3 mqtt_client.py`, abrir `http://127.0.0.1:8765` e enviar PING/STATUS/NOME; conferir ACK e telemetria.
+
+---
+
 ### 2026-11-12 — Assunção do cliente PC e planejamento do painel web
 
 - **Autor(es):** Manuela Lino
