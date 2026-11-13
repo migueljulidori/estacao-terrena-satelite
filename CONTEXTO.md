@@ -129,3 +129,15 @@ Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Juli
 
 - `docs/referencia/Estacao_Terrena_Satelite_Fase1.pdf`
 - `docs/referencia/Planejamento_sistema_ESP32_HMAC_AES.pdf`
+
+## Atualização de arquitetura — PI 3T recebido em 2026-11-13
+
+O documento atualizado define a Raspberry Pi como a estação terrena que hospeda o broker MQTT Mosquitto. O computador executa somente a aplicação Python cliente MQTT. Portanto, não há troca de broker prevista.
+
+O enlace deve ser bidirecional:
+- ESP32 publica telemetria no tópico satellite/esp32-01/telemetry; a aplicação Python assina esse tópico.
+- Aplicação Python publica comandos no tópico satellite/esp32-01/command; o ESP32 assina esse tópico.
+
+O endereço 192.168.30.52 é o IP fixo do ESP32. O IP do broker deve ser o endereço LAN real da Raspberry Pi e precisa ser confirmado antes do teste. Esse mesmo IP deve ser configurado em mqtt_broker no firmware e em BROKER_HOST no arquivo local mqtt_config.py.
+
+Estado: o firmware da branch feature/mqtt-bidirecional foi preparado para publicar telemetria e receber comandos; o cliente Python foi preparado para receber telemetria e publicar comandos. A validação física dos dois sentidos ainda depende da configuração correta do IP do broker e de teste com Raspberry Pi, ESP32 e computador na rede isolada. Atualmente, o firmware apenas imprime comandos recebidos no Monitor Serial.
