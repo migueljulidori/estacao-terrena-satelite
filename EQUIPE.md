@@ -8,7 +8,7 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 
 | Parte | Pasta | Responsável | Status |
 |-------|--------|-------------|--------|
-| Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | Pipeline: Wi-Fi → MQTT → dados → cripto → pacote → publicar — **agora: MQTT (conectar)** |
+| Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | PI 3T bidirecional — telemetria TX + comandos RX + ACK |
 | Cliente PC (MQTT + verificação + painel web) | `cliente-pc/` | **Manuela Lino** | Cliente MQTT bidirecional: recebe telemetria/ACK, publica comandos de teste e atualiza o painel web |
 | Estação terrena (broker Mosquitto / SSH) | `estacao-terrena/` | _coloque seu nome_ | Aguardando responsável |
 | Protocolo (payload ≤ 16 bytes) | `docs/protocolo/` | _coloque seu nome_ (pode ser em dupla) | Aguardando responsável |
