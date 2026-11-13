@@ -1,204 +1,46 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ground Station | Mission Control</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ground Station | Mission Control</title><link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
 <header class="topbar">
-    <div class="brand">
-        <div class="brand-symbol">⌁</div>
-        <div>
-            <h1>GROUND STATION</h1>
-            <p>SATELLITE COMMUNICATION SYSTEM</p>
-        </div>
-    </div>
-
-    <div class="header-right">
-        <div class="status">
-            <span class="status-dot"></span>
-            AGUARDANDO CONEXÃO
-        </div>
-        <span class="clock" id="clock">--/--/---- &nbsp; --:--:--</span>
-    </div>
+<div class="brand"><div class="brand-symbol">⌁</div><div><h1>GROUND STATION</h1><p>SATELLITE COMMUNICATION SYSTEM</p></div></div>
+<div class="header-right"><div class="status"><span class="status-dot" id="connection-dot"></span><span id="connection-text">AGUARDANDO CONEXÃO</span></div><span class="clock" id="clock">--/--/---- &nbsp; --:--:--</span></div>
 </header>
-
 <main>
-
-    <section class="hero">
-
-        <div class="earth-panel">
-            <img src="assets/terra-estacao.png" alt="Terra com órbita de satélite">
-            <div class="coordinates">
-                <span>LAT &nbsp; -23.5505°</span>
-                <span>LON &nbsp; -46.6333°</span>
-            </div>
-        </div>
-
-        <div class="monitor-panel">
-
-            <div class="mission-heading">
-                <div>
-                    <p class="eyebrow">MISSION CONTROL / TELEMETRY</p>
-                    <h2>Satellite Monitoring</h2>
-                    <p class="subtitle">
-                        Monitoramento de dados operacionais do satélite
-                    </p>
-                </div>
-
-                <div class="mission-id">
-                    <span>MISSION</span>
-                    <strong>SAT-001</strong>
-                </div>
-            </div>
-
-            <div class="section-heading">
-                <h3>DADOS DE TELEMETRIA</h3>
-                <span>REAL-TIME DATA</span>
-            </div>
-
-            <div class="telemetry-grid">
-
-                <article class="data-card">
-                    <span class="card-icon">ϟ</span>
-                    <p>ENERGIA</p>
-                    <strong id="battery">--%</strong>
-                    <small>Nível de bateria</small>
-                    <div class="progress"><span id="battery-bar" style="width:0%"></span></div>
-                </article>
-
-                <article class="data-card">
-                    <span class="card-icon">♧</span>
-                    <p>TEMPERATURA INTERNA</p>
-                    <strong id="temp-in">-- °C</strong>
-                    <small>Temperatura</small>
-                    <div class="progress"><span style="width:68%"></span></div>
-                </article>
-
-                <article class="data-card">
-                    <span class="card-icon">♧</span>
-                    <p>TEMPERATURA EXTERNA</p>
-                    <strong id="temp-out">-- °C</strong>
-                    <small>Temperatura</small>
-                    <div class="progress"><span style="width:72%"></span></div>
-                </article>
-
-                <article class="data-card">
-                    <span class="card-icon">☼</span>
-                    <p>IRRADIAÇÃO SOLAR</p>
-                    <strong id="solar">--</strong>
-                    <small>W/m²</small>
-                    <div class="progress"><span style="width:78%"></span></div>
-                </article>
-
-            </div>
-        </div>
-    </section>
-
-    <section class="lower-grid">
-
-        <div class="panel communication-panel">
-            <div class="section-heading">
-                <h3>COMUNICAÇÃO DE DADOS</h3>
-                <span>MQTT CONNECTION</span>
-            </div>
-
-            <div class="communication-grid">
-
-                <div class="communication-item">
-                    <span class="communication-icon">⌁</span>
-                    <p>TÓPICO MQTT</p>
-                    <strong id="topic">satellite/esp32-01/telemetry</strong>
-                </div>
-
-                <div class="communication-item">
-                    <span class="communication-icon">▤</span>
-                    <p>MENSAGENS RECEBIDAS</p>
-                    <strong id="messages">0</strong>
-                </div>
-
-                <div class="communication-item">
-                    <span class="communication-icon">◷</span>
-                    <p>ÚLTIMA ATUALIZAÇÃO</p>
-                    <strong id="last-update">--:--:--</strong>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="panel table-panel">
-            <div class="section-heading">
-                <h3>TABELA DE TELEMETRIA</h3>
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>CAMPO</th>
-                        <th>VALOR</th>
-                        <th>STATUS</th>
-                    </tr>
-                </thead>
-                <tbody id="telemetry-table">
-                    <tr>
-                        <td>Energia (bateria)</td>
-                        <td id="table-battery">87%</td>
-                        <td><span class="ok">● OK</span></td>
-                    </tr>
-                    <tr>
-                        <td>Temp. interna</td>
-                        <td id="table-temp-in">-- °C</td>
-                        <td><span class="ok">● OK</span></td>
-                    </tr>
-                    <tr>
-                        <td>Temp. externa</td>
-                        <td id="table-temp-out">-- °C</td>
-                        <td><span class="ok">● OK</span></td>
-                    </tr>
-                    <tr>
-                        <td>Irradiação solar</td>
-                        <td id="table-solar">-- W/m²</td>
-                        <td><span class="ok">● OK</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-    </section>
-
-    <section class="panel payload-panel">
-        <div class="section-heading">
-            <h3>REGISTRO DE MENSAGENS</h3>
-            <span>RECEIVED PAYLOAD</span>
-        </div>
-
-        <div class="payload-content">
-            <div class="payload-main">
-                <p>PAYLOAD ORIGINAL</p>
-                <pre id="payload">Nenhuma mensagem recebida.</pre>
-            </div>
-
-            <div class="payload-status">
-                <span class="waiting-icon">◷</span>
-                <strong>AGUARDANDO TRANSMISSÃO</strong>
-                <p>Nenhuma mensagem recebida.</p>
-            </div>
-        </div>
-    </section>
-
+<section class="hero">
+<div class="earth-panel"><img src="assets/terra-estacao.png" alt="Terra com órbita de satélite"><div class="coordinates"><span>LAT &nbsp; -23.5505°</span><span>LON &nbsp; -46.6333°</span></div></div>
+<div class="monitor-panel">
+<div class="mission-heading"><div><p class="eyebrow">MISSION CONTROL / TELEMETRY</p><h2>Satellite Monitoring</h2><p class="subtitle">Monitoramento de dados operacionais do satélite</p></div><div class="mission-id"><span>MISSION</span><strong>SAT-001</strong></div></div>
+<div class="section-heading"><h3>DADOS DE TELEMETRIA</h3><span>REAL-TIME DATA</span></div>
+<div class="telemetry-grid">
+<article class="data-card"><span class="card-icon">ϟ</span><p>ENERGIA</p><strong id="battery">--%</strong><small>Nível de bateria</small><div class="progress"><span id="battery-bar" style="width:0%"></span></div></article>
+<article class="data-card"><span class="card-icon">♧</span><p>TEMPERATURA INTERNA</p><strong id="temp-in">-- °C</strong><small>Temperatura</small><div class="progress"><span style="width:0%"></span></div></article>
+<article class="data-card"><span class="card-icon">♧</span><p>TEMPERATURA EXTERNA</p><strong id="temp-out">-- °C</strong><small>Temperatura</small><div class="progress"><span style="width:0%"></span></div></article>
+<article class="data-card"><span class="card-icon">☼</span><p>IRRADIAÇÃO SOLAR</p><strong id="solar">--</strong><small>W/m²</small><div class="progress"><span style="width:0%"></span></div></article>
+</div></div></section>
+<section class="lower-grid">
+<div class="panel communication-panel"><div class="section-heading"><h3>COMUNICAÇÃO DE DADOS</h3><span>MQTT CONNECTION</span></div><div class="communication-grid">
+<div class="communication-item"><span class="communication-icon">⌁</span><p>TÓPICO MQTT</p><strong id="topic">satellite/esp32-01/telemetry</strong></div>
+<div class="communication-item"><span class="communication-icon">▤</span><p>MENSAGENS RECEBIDAS</p><strong id="messages">0</strong></div>
+<div class="communication-item"><span class="communication-icon">◷</span><p>ÚLTIMA ATUALIZAÇÃO</p><strong id="last-update">--:--:--</strong></div>
+</div></div>
+<div class="panel table-panel"><div class="section-heading"><h3>TABELA DE TELEMETRIA</h3></div><table><thead><tr><th>CAMPO</th><th>VALOR</th><th>STATUS</th></tr></thead><tbody id="telemetry-table">
+<tr><td>Energia (bateria)</td><td id="table-battery">--%</td><td><span class="ok">● AGUARDANDO</span></td></tr>
+<tr><td>Temp. interna</td><td id="table-temp-in">-- °C</td><td><span class="ok">● AGUARDANDO</span></td></tr>
+<tr><td>Temp. externa</td><td id="table-temp-out">-- °C</td><td><span class="ok">● AGUARDANDO</span></td></tr>
+<tr><td>Irradiação solar</td><td id="table-solar">-- W/m²</td><td><span class="ok">● AGUARDANDO</span></td></tr>
+</tbody></table></div></section>
+<section class="panel command-panel"><div class="section-heading"><h3>TELECOMANDOS</h3><span>GROUND → SATELLITE</span></div>
+<p class="command-help">Envie comandos pelo tópico MQTT de comando.</p><div class="command-buttons"><button type="button" data-command="PING">PING</button><button type="button" data-command="STATUS">SOLICITAR STATUS</button></div>
+<form class="name-form" id="name-form"><label for="satellite-name">Alterar nome do satélite</label><input id="satellite-name" type="text" maxlength="11" placeholder="Nome (até 11 caracteres)"><button type="submit">ENVIAR NOME</button></form><p id="command-feedback" role="status"></p></section>
+<section class="panel payload-panel"><div class="section-heading"><h3>REGISTRO DE MENSAGENS</h3><span>RECEIVED PAYLOAD</span></div><div class="payload-content">
+<div class="payload-main"><p>PAYLOAD ORIGINAL</p><pre id="payload">Nenhuma mensagem recebida.</pre></div>
+<div class="payload-status"><span class="waiting-icon">◷</span><strong id="payload-kind">AGUARDANDO TRANSMISSÃO</strong><p id="payload-detail">Nenhuma mensagem recebida.</p></div>
+</div></section>
 </main>
-
-<footer>
-    <span>GROUND STATION &nbsp; — &nbsp; SATELLITE TELEMETRY</span>
-    <span>MISSION CONTROL SYSTEM</span>
-</footer>
-
+<footer><span>GROUND STATION &nbsp; — &nbsp; SATELLITE TELEMETRY</span><span>MISSION CONTROL SYSTEM</span></footer>
 <script src="script.js"></script>
-
-</body>
-</html>
+</body></html>
