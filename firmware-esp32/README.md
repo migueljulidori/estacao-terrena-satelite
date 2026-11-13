@@ -1,37 +1,27 @@
-# Firmware ESP32 (satélite) — Miguel
+# Firmware ESP32 — Miguel
 
-## Bidirecional (PI 3T)
-
-- **TX:** `satellite/esp32-01/telemetry` (telemetria + ACK)
-- **RX:** `satellite/esp32-01/command` — configuração principal: **nome** (`NOME=...`)
+ESP e estação usam o **mesmo** esquema: HMAC + AES-CBC, payload **16 B**.  
+Contrato completo: `docs/protocolo/README.md` (para a Manuela espelhar no PC).
 
 ## Arquivos
 
 | Arquivo | Função |
 |---------|--------|
+| `cripto_mod.h` | assinar / verificar / cifrar / decifrar |
+| `dados_mod.h` | telemetria + ACK cifrados |
+| `comando_mod.h` | RX: abre pacote e aplica comando |
+| `mqtt_mod.h` / `wifi_mod.h` | enlace |
 | `satelite.ino` | orquestra |
-| `wifi_mod.h` | Wi-Fi |
-| `mqtt_mod.h` | MQTT |
-| `dados_mod.h` | gera/envia telemetria |
-| `comando_mod.h` | interpreta comandos |
 
-## Testar comando
+## Bibliotecas
 
-```bash
-mosquitto_pub -h IP_DO_BROKER -p 1883 -u USUARIO -P 'SENHA' \
-  -t 'satellite/esp32-01/command' -m 'PING'
-```
+- PubSubClient  
+- mbedTLS (já no ESP32)
 
-Para configurar o nome:
-```bash
-mosquitto_pub ... -t 'satellite/esp32-01/command' -m 'NOME=Alpha'
-```
-Serial: `Nome do satelite: Alpha` + ACK; telemetria passa a ecoar o nome.
+## Teste rápido
 
-## Configurar
+Grave o sketch → Serial: `TX telemetria (HMAC+AES)`.  
+No broker a mensagem **não** é legível sem as chaves.
 
-`mqtt_mod.h`: broker, usuário, senha.
-
-## Próximo
-
-Criptografia (HMAC/AES) nos dois sentidos.
+Comando em claro (transição): `NOME=Alpha` ainda funciona com aviso.  
+Comando definitivo: PC manda 16 B já cifrados+HMAC.

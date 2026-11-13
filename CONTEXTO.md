@@ -46,9 +46,9 @@ Cliente Python deve verificar e rejeitar mensagens inválidas. Chaves: gerar, gu
 2. **MQTT** ✓ — connect + publish + subscribe comando
 3. **Gerar dados** ✓ — telemetria simulada (`dados_mod.h`)
 3b. **Comandos RX** ✓ — configuração de **nome** (`NOME=...`) + PING/STATUS
-4. **Criptografia** ← próxima
-5. **Montar pacote** — pendente
-6. **Publicar** — já usado; versão final com segurança depois
+4. **Criptografia** ✓ — HMAC trunc(8) + AES-128-CBC nos dois sentidos (`cripto_mod.h`)
+5. **Montar pacote** ✓ — bloco 16 B (tipo\|seq\|dados\|MAC) → AES
+6. **Publicar** ✓ — ciphertext; PC (Manuela) faz o espelho: cifrar/decifrar/assinar/verificar
 
 ## Link budget (GEO)
 
@@ -70,9 +70,9 @@ Código ESP (Arduino) + cliente Python, fluxogramas, especificação do protocol
 | Tópico telemetria | `satellite/esp32-01/telemetry` |
 | Tópico comando | `satellite/esp32-01/command` |
 | Broker | Mosquitto (IP no ESP: `mqtt_broker`) |
-| Autenticação / cripto | HMAC-SHA256 + AES-CBC (planejado) |
-| Progresso firmware | Bidirecional: telemetria TX + comandos RX interpretados |
-| Layout TX/RX | `docs/protocolo/README.md` (provisório) |
+| Autenticação / cripto | HMAC-SHA256 trunc 8 B + AES-128-CBC (IV derivado), 16 B |
+| Progresso firmware | Bidirecional + segurança no ESP; PC espelha o contrato |
+| Contrato TX/RX | `docs/protocolo/README.md` |
 
 ## Fontes
 

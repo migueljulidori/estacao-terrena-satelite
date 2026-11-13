@@ -36,6 +36,18 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-13 — HMAC + AES-CBC no ESP (contrato com a estação)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `cripto_mod.h`, `dados_mod.h`, `comando_mod.h`, `docs/protocolo/`
+- **O que mudou:**
+  - ESP assina (HMAC), cifra (AES-CBC), verifica e decifra
+  - Documentado contrato para o PC (Manuela) fazer o mesmo nos dois sentidos
+  - Payload 16 B; IV derivado; HMAC truncado 8 B
+- **Por quê:** autenticação + confidencialidade bilaterais dentro do limite dos docs
+- **Como testar / impacto:** Serial `TX telemetria (HMAC+AES)`; PC precisa das mesmas chaves
+
 ### 2026-11-13 — Comando de configuração: nome do satélite
 
 - **Autor(es):** Miguel Julidori

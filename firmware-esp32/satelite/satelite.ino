@@ -1,18 +1,17 @@
 /*
- * Satélite ESP32 — orquestra os módulos
- * PI 3T: bidirecional (telemetria TX + comando RX)
+ * Satélite ESP32 — PI 3T
+ * Bidirecional + HMAC-SHA256 (trunc 8) + AES-128-CBC (payload 16 B)
  *
- *   wifi_mod.h    — Wi-Fi
- *   mqtt_mod.h    — MQTT
- *   dados_mod.h   — telemetria
- *   comando_mod.h — interpreta comandos da estação
+ * ESP e estação (Manuela) fazem os dois lados:
+ *   cifrar / descriptografar / assinar (HMAC) / verificar
  *
- * Próxima: criptografia
- * Biblioteca: PubSubClient | Serial: 115200
+ *   wifi_mod.h | mqtt_mod.h | cripto_mod.h | dados_mod.h | comando_mod.h
+ * mbedTLS (core ESP32) + PubSubClient | Serial 115200
  */
 
 #include "wifi_mod.h"
 #include "mqtt_mod.h"
+#include "cripto_mod.h"
 #include "dados_mod.h"
 #include "comando_mod.h"
 
@@ -22,7 +21,7 @@ void setup() {
   Serial.begin(115200);
   delay(500);
 
-  Serial.println("Satelite ESP32 — telemetria + comandos");
+  Serial.println("Satelite ESP32 — HMAC + AES-CBC (16 B)");
   wifiConectar();
   mqttConectar();
   ultimoEnvio = millis();

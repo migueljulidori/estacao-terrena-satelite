@@ -1,37 +1,59 @@
-# Protocolo ESP — bidirecional
+# Contrato de segurança ESP ↔ estação (Manuela)
 
-## Resposta direta
+Os **dois lados** fazem a mesma coisa:
 
-**Sim:** o ESP **manda** (telemetria) e **recebe** (comandos), se estiver gravado com o firmware atual e inscrito em `command`.
+| Operação | ESP | Estação (PC) |
+|----------|-----|----------------|
+| Assinar (HMAC) | sim (TX) | sim (TX comando) |
+| Verificar HMAC | sim (RX) | sim (RX telemetria/ACK) |
+| Cifrar (AES-CBC) | sim (TX) | sim (TX comando) |
+| Decifrar (AES-CBC) | sim (RX) | sim (RX telemetria/ACK) |
 
-| Direção | Tópico | O que faz |
-|---|---|---|
-| ESP → estação | `satellite/esp32-01/telemetry` | telemetria periódica (+ ACK) |
-| Estação → ESP | `satellite/esp32-01/command` | configuração, principalmente **nome** |
+## Limite
 
-## Configuração principal: NOME
+Payload MQTT da aplicação = **16 bytes** (conta dados + segurança).
 
-Texto (teste):
+## Algoritmos
 
-```bash
-mosquitto_pub -h IP -p 1883 -u USUARIO -P 'SENHA' \
-  -t 'satellite/esp32-01/command' -m 'NOME=Alpha'
+- **AES-128-CBC**
+- **HMAC-SHA256** truncado aos **8 primeiros bytes**
+- Ordem: **HMAC depois AES** no bloco claro (MAC-then-Encrypt)
+- **IV não enviado**: `SHA256("SAT-IV" || chave_aes)[0:16]` (igual nos dois lados)
+
+## Chaves (iguais nos dois códigos)
+
+```
+AES:  TELECO2K25-AES12   (16 bytes ASCII)
+HMAC: TELECO2K25-MAC16   (16 bytes ASCII)
 ```
 
-- ESP guarda o nome (até 12 caracteres)
-- Responde ACK na telemetria
-- Próximas telemetrias levam até 6 chars do nome nos bytes 10–15
-- Serial: `Nome do satelite: Alpha`
+Arquivo no ESP: `firmware-esp32/satelite/cripto_mod.h`
 
-Outros textos úteis: `PING`, `STATUS`.
-
-## Telemetria (16 bytes)
+## Bloco claro (16 B) antes do AES
 
 | Offset | Campo |
 |--------|--------|
-| 0 | sat_id |
-| 1 | tipo `0x01` telemetria / `0x02` ACK |
-| 2 | seq |
-| 3 | bateria % (ou cmd no ACK) |
-| 4–9 | temps + solar |
-| 10–15 | início do **nome** |
+| 0 | tipo |
+| 1 | seq |
+| 2–7 | dados (6 B) |
+| 8–15 | HMAC truncado (8 B) de `tipo \|\| seq \|\| dados` |
+
+MQTT publica só o **ciphertext** (16 B).
+
+## Tipos
+
+| tipo | Quem manda | dados |
+|------|------------|--------|
+| `0x01` | ESP → PC | bat, tempInt×10, tempExt×10, solar/4 |
+| `0x02` | ESP → PC (ACK) | cmd + início do nome |
+| `0x10` | PC → ESP | PING |
+| `0x12` | PC → ESP | STATUS |
+| `0x13` | PC → ESP | SET_NOME (6 chars) |
+
+## O que a Manuela implementa no PC
+
+1. **Receber** telemetria/ACK: AES decrypt → checar HMAC → mostrar dados  
+2. **Enviar** comando: montar claro → HMAC → AES → publish em `command`  
+3. Rejeitar se HMAC falhar  
+
+Enquanto o PC não cifrar, o ESP ainda aceita `PING` / `NOME=` em claro (aviso no Serial). Quando o PC estiver pronto: `#define CRIPTO_ACEITAR_CLARO 0` no ESP.

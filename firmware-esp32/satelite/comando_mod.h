@@ -4,20 +4,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include "dados_mod.h"
+#include "cripto_mod.h"
 
 /*
- * Estação → satélite: configuração principal = NOME.
+ * RX: ciphertext 16 B → AES decrypt → verifica HMAC → executa.
+ * Tipos de comando (campo tipo do bloco claro): 0x10 PING | 0x12 STATUS | 0x13 SET_NOME
+ * SET_NOME: dados[0..5] = nome
  *
- * Texto (fácil no mosquitto_pub):
- *   NOME=Alpha
- *   PING          (teste de enlace)
- *   STATUS        (força telemetria)
- *
- * Binário:
- *   [0] sat_id (1 ou 0=todos)
- *   [1] cmd  0x10 PING | 0x12 STATUS | 0x13 SET_NOME
- *   [2] seq
- *   [3..] nome (só no SET_NOME), até 12 chars
+ * Se CRIPTO_ACEITAR_CLARO: ainda aceita texto PING/STATUS/NOME= (transição).
  */
 
 const uint8_t CMD_PING = 0x10;
@@ -32,35 +26,9 @@ unsigned long comandoIntervaloMs() {
 }
 
 bool comandoConsumirForcarTx() {
-  if (!g_forcarTelemetria) {
-    return false;
-  }
+  if (!g_forcarTelemetria) return false;
   g_forcarTelemetria = false;
   return true;
-}
-
-void comandoEnviarAck(uint8_t seq, uint8_t cmdOrigem) {
-  uint8_t buf[DADOS_TAM];
-  memset(buf, 0, DADOS_TAM);
-  buf[0] = DADOS_SAT_ID;
-  buf[1] = DADOS_TIPO_ACK;
-  buf[2] = seq;
-  buf[3] = cmdOrigem;
-
-  // devolve pedaço do nome atual no ACK
-  for (unsigned int i = 0; i < 6 && g_satNome[i] != 0; i++) {
-    buf[10 + i] = (uint8_t)g_satNome[i];
-  }
-
-  if (mqttPublicar(buf, DADOS_TAM)) {
-    Serial.print("TX ACK cmd=0x");
-    if (cmdOrigem < 0x10) Serial.print("0");
-    Serial.print(cmdOrigem, HEX);
-    Serial.print(" nome=");
-    Serial.println(g_satNome);
-  } else {
-    Serial.println("TX ACK falhou");
-  }
 }
 
 void comandoSetNomeBytes(const byte *nome, unsigned int tam) {
@@ -73,47 +41,31 @@ void comandoSetNomeBytes(const byte *nome, unsigned int tam) {
   memcpy(tmp, nome, n);
   tmp[n] = 0;
   for (unsigned int i = 0; i < n; i++) {
-    if (tmp[i] < 32 || tmp[i] > 126) {
-      tmp[i] = '_';
-    }
+    if (tmp[i] < 32 || tmp[i] > 126) tmp[i] = '_';
   }
   dadosDefinirNome(tmp);
 }
 
-void comandoExecutarBinario(const byte *payload, unsigned int tamanho) {
-  uint8_t satId = payload[0];
-  uint8_t cmd = payload[1];
-  uint8_t seq = (tamanho > 2) ? payload[2] : 0;
-
-  if (satId != 0 && satId != DADOS_SAT_ID) {
-    Serial.println("Comando ignorado: sat_id diferente");
-    return;
-  }
-
-  switch (cmd) {
+void comandoExecutar(uint8_t tipo, uint8_t seq, const uint8_t dados[CRIPTO_DADOS_TAM]) {
+  switch (tipo) {
     case CMD_PING:
       Serial.println("CMD PING");
-      comandoEnviarAck(seq, CMD_PING);
+      dadosEnviarAck(seq, CMD_PING);
       break;
-
     case CMD_STATUS:
       Serial.println("CMD STATUS");
       g_forcarTelemetria = true;
-      comandoEnviarAck(seq, CMD_STATUS);
+      dadosEnviarAck(seq, CMD_STATUS);
       break;
-
     case CMD_SET_NOME:
       Serial.println("CMD SET_NOME");
-      if (tamanho > 3) {
-        comandoSetNomeBytes(&payload[3], tamanho - 3);
-      }
-      comandoEnviarAck(seq, CMD_SET_NOME);
+      comandoSetNomeBytes(dados, CRIPTO_DADOS_TAM);
+      dadosEnviarAck(seq, CMD_SET_NOME);
       g_forcarTelemetria = true;
       break;
-
     default:
       Serial.print("CMD desconhecido: 0x");
-      Serial.println(cmd, HEX);
+      Serial.println(tipo, HEX);
       break;
   }
 }
@@ -121,48 +73,39 @@ void comandoExecutarBinario(const byte *payload, unsigned int tamanho) {
 bool comandoPareceTexto(const byte *payload, unsigned int tamanho) {
   if (tamanho == 0) return false;
   for (unsigned int i = 0; i < tamanho; i++) {
-    byte c = payload[i];
-    if (c == 0) break;
-    if (c < 32 || c > 126) return false;
+    if (payload[i] == 0) break;
+    if (payload[i] < 32 || payload[i] > 126) return false;
   }
   return true;
 }
 
-void comandoExecutarTexto(const byte *payload, unsigned int tamanho) {
+void comandoExecutarTextoClaro(const byte *payload, unsigned int tamanho) {
   char txt[17];
   unsigned int n = tamanho > 16 ? 16 : tamanho;
   memcpy(txt, payload, n);
   txt[n] = 0;
-
   for (int i = (int)n - 1; i >= 0; i--) {
-    if (txt[i] == '\r' || txt[i] == '\n' || txt[i] == ' ') {
-      txt[i] = 0;
-    } else {
-      break;
-    }
+    if (txt[i] == '\r' || txt[i] == '\n' || txt[i] == ' ') txt[i] = 0;
+    else break;
   }
+
+  Serial.println("AVISO: comando em claro (Manuela deve passar a cifrar+HMAC)");
 
   if (strcasecmp(txt, "PING") == 0) {
-    Serial.println("CMD texto PING");
-    comandoEnviarAck(0, CMD_PING);
+    dadosEnviarAck(0, CMD_PING);
     return;
   }
-
   if (strcasecmp(txt, "STATUS") == 0) {
-    Serial.println("CMD texto STATUS");
     g_forcarTelemetria = true;
-    comandoEnviarAck(0, CMD_STATUS);
+    dadosEnviarAck(0, CMD_STATUS);
     return;
   }
-
   if (strncasecmp(txt, "NOME=", 5) == 0) {
-    Serial.println("CMD texto NOME=");
     comandoSetNomeBytes((const byte *)(txt + 5), strlen(txt + 5));
-    comandoEnviarAck(0, CMD_SET_NOME);
+    dadosEnviarAck(0, CMD_SET_NOME);
     g_forcarTelemetria = true;
     return;
   }
-
   Serial.print("CMD texto desconhecido: ");
   Serial.println(txt);
 }
@@ -173,7 +116,7 @@ void comandoProcessar(const byte *payload, unsigned int tamanho) {
     return;
   }
 
-  Serial.print("RX comando HEX=");
+  Serial.print("RX HEX=");
   for (unsigned int i = 0; i < tamanho; i++) {
     if (payload[i] < 0x10) Serial.print("0");
     Serial.print(payload[i], HEX);
@@ -181,18 +124,24 @@ void comandoProcessar(const byte *payload, unsigned int tamanho) {
   }
   Serial.println();
 
-  if (tamanho >= 2 &&
-      (payload[1] == CMD_PING || payload[1] == CMD_STATUS || payload[1] == CMD_SET_NOME)) {
-    comandoExecutarBinario(payload, tamanho);
-    return;
+  if (tamanho == CRIPTO_TAM) {
+    uint8_t tipo, seq;
+    uint8_t dados[CRIPTO_DADOS_TAM];
+    if (criptoAbrir(payload, &tipo, &seq, dados)) {
+      Serial.println("RX OK (AES+HMAC)");
+      comandoExecutar(tipo, seq, dados);
+      return;
+    }
   }
 
+#if CRIPTO_ACEITAR_CLARO
   if (comandoPareceTexto(payload, tamanho)) {
-    comandoExecutarTexto(payload, tamanho);
+    comandoExecutarTextoClaro(payload, tamanho);
     return;
   }
+#endif
 
-  Serial.println("Comando em formato nao reconhecido");
+  Serial.println("Comando rejeitado");
 }
 
 #endif
