@@ -1,15 +1,39 @@
-# Cliente PC (estação terrena) — MQTT bidirecional
+# Cliente PC (estação terrena) — MQTT, AES e HMAC
 
 **Responsável: Manuela Lino**
 
-O cliente Python conecta ao broker Mosquitto, recebe telemetria/ACK do ESP32 e publica telecomandos. Ele também serve o painel web local, que acompanha as mensagens em tempo real.
+O cliente conecta ao Mosquitto, recebe telemetria/ACK, autentica e decifra os pacotes do ESP32, publica comandos cifrados e atualiza o painel web local.
 
-## Fluxo MQTT
+## Contrato criptográfico espelhado do firmware
 
-| Direção | Tópico | Operação do PC |
+O formato implementado em `crypto_protocol.py` segue `docs/protocolo/README.md` da branch `main` e `firmware-esp32/satelite/cripto_mod.h`:
+
+- AES-128-CBC, bloco/ciphertext de 16 bytes.
+- HMAC-SHA256 truncado aos 8 primeiros bytes.
+- Bloco claro: `tipo (1) | sequência (1) | dados (6) | HMAC (8)`.
+- HMAC calculado sobre os 8 primeiros bytes do bloco claro.
+- IV derivado: `SHA256("SAT-IV" || chave_AES)[0:16]`.
+- Sem padding: o bloco claro já tem exatamente 16 bytes.
+- O cliente só interpreta e encaminha à dashboard um pacote depois de decifrar e validar o HMAC.
+
+Tipos: `0x01` telemetria; `0x02` ACK; `0x10` PING; `0x12` STATUS; `0x13` SET_NOME.
+
+### Campos de dados da telemetria (6 bytes)
+
+| Byte | Campo | Codificação |
 |---|---|---|
-| ESP32 → PC | `satellite/esp32-01/telemetry` | Subscriber |
-| PC → ESP32 | `satellite/esp32-01/command` | Publisher |
+| 0 | Bateria | percentual |
+| 1–2 | Temperatura interna | int16 little-endian, décimos de °C |
+| 3–4 | Temperatura externa | int16 little-endian, décimos de °C |
+| 5 | Irradiação solar | valor dividido por 4; o PC multiplica por 4 |
+
+ACK: byte 0 identifica o comando; bytes 1–5 contêm o início do nome do satélite.
+
+### Comandos enviados pelo painel
+
+- `PING` e `STATUS`: dados zerados.
+- `NOME=Alpha`: tipo `0x13`, nome ASCII de até 6 bytes, preenchido com NUL até completar os seis bytes.
+- Cada comando é selado com HMAC e AES antes de ser publicado em `satellite/esp32-01/command`.
 
 ## Instalação
 
@@ -22,72 +46,38 @@ pip install -r requirements.txt
 cp mqtt_config.example.py mqtt_config.py
 ```
 
-Edite `mqtt_config.py` com o IP real da máquina que executa o Mosquitto, usuário e senha do cliente `groundstation`. Se já existir um `mqtt_config.py` antigo, acrescente `TOPIC_COMMAND`, `WEB_HOST` e `WEB_PORT` conforme o exemplo (ou atualize-o a partir do exemplo). Nunca versione credenciais reais.
+Edite `mqtt_config.py`:
+1. Configure IP, usuário e senha do broker.
+2. Configure `AES_KEY` e `HMAC_KEY` com os mesmos 16 bytes ASCII usados pelo firmware em `cripto_mod.h`.
+3. Não compartilhe nem versione `mqtt_config.py`.
 
-## Testes locais do decodificador e dos comandos
+As chaves atualmente presentes no código da branch `main` já estão publicadas no repositório. Elas não devem ser consideradas secretas. Para uso real, a equipe precisa gerar novas chaves e atualizar o firmware e o arquivo local do PC em conjunto, sem publicar as chaves.
 
-Com o ambiente virtual ativo e as dependências instaladas:
+## Execução
 
 ```bash
 python3 -m unittest -v test_mqtt_client.py
-```
-
-Esses testes verificam o decodificador dos pacotes de telemetria/ACK e a validação dos comandos, sem precisar conectar ao broker.
-
-## Executar cliente e painel
-
-Na pasta `cliente-pc/`, com o ambiente virtual ativado e o arquivo `mqtt_config.py` configurado, execute:
-
-```bash
 python3 mqtt_client.py
 ```
 
-Mantenha esse terminal aberto. O programa conecta ao broker MQTT, assina o tópico de telemetria e inicia o servidor web local.
+Mantenha o terminal aberto e acesse `http://127.0.0.1:8765`. A dashboard mostra os dados somente após validação do HMAC. Mensagens com tamanho incorreto, chave incorreta ou HMAC inválido são rejeitadas.
 
-No Firefox, abra exatamente:
+## Limitações de segurança que permanecem
 
-```
-http://127.0.0.1:8765
-```
+Esta implementação reproduz o contrato atual do firmware para permitir interoperabilidade, mas **não representa uma garantia criptográfica forte**:
 
-**Importante:** não abra `website/index.html` pelo gerenciador de arquivos nem por um endereço `file://...`. Essa forma carrega apenas o HTML estático e não recebe os eventos MQTT. A dashboard conectada é servida pelo próprio `mqtt_client.py` no endereço HTTP acima.
+- O IV é determinístico e reutilizado para todas as mensagens com a mesma chave. AES-CBC exige IV imprevisível e único por mensagem.
+- O firmware guarda as chaves no código versionado da branch `main`; portanto, as chaves atuais estão expostas a quem acessa o repositório.
+- O protocolo usa sequência de 1 byte, mas ainda não implementa janela anti-replay nem persistência de sequência.
+- O HMAC truncado a 8 bytes é o formato escolhido pelo firmware atual; não altere um lado isoladamente.
 
-## Testes de telecomando
+A correção robusta desses pontos exige uma nova versão conjunta do protocolo e do firmware. Enquanto isso, use somente a rede isolada de testes.
 
-Pelo painel, use os botões **PING**, **SOLICITAR STATUS** e o formulário de nome. Os comandos de texto aceitos pelo firmware atual são:
+## Diagnóstico
 
-- `PING`: testa o enlace; o ESP deve devolver ACK.
-- `STATUS`: solicita telemetria imediata e ACK.
-- `NOME=Alpha`: altera o nome do satélite; o firmware atual aceita até 11 caracteres nesse formato de texto (o comando inteiro precisa caber em 16 bytes).
-
-Também é possível publicar pelo terminal, em outra janela:
-
-```bash
-mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' \
-  -t 'satellite/esp32-01/command' -m 'PING'
-```
-
-## O que o cliente interpreta
-
-O firmware atual envia pacotes de 16 bytes:
-
-- Tipo `0x01`: telemetria — ID, sequência, bateria, temperatura interna/externa, irradiação solar e início do nome.
-- Tipo `0x02`: ACK — ID, sequência, código do comando confirmado e início do nome.
-
-O painel atualiza os indicadores quando recebe telemetria e identifica ACKs no registro de mensagens. Pacotes com tamanho ou tipo inesperado são sinalizados como inválidos.
-
-## Limites desta etapa
-
-- Os valores gerados pelo firmware ainda são simulados.
-- HMAC/AES ainda não estão implementados; este cliente não declara autenticidade nem confidencialidade criptográfica.
-- A comunicação usa MQTT TCP na porta 1883, conforme a configuração atual da LAN de testes.
-- O painel escuta somente em `127.0.0.1`.
-
-## Diagnóstico rápido
-
-- **Conexão recusada/timeout:** confira se o Mosquitto está ativo, o IP/porta e se o PC está na mesma rede.
-- **Not authorized:** confira usuário/senha e ACL do broker. O usuário `groundstation` precisa de leitura em `telemetry` e escrita em `command`.
-- **Comando publicado, sem ACK:** confira se o ESP32 está conectado ao mesmo broker, inscrito em `command` e com o firmware bidirecional atualizado.
-- **Painel não atualiza:** acesse pelo endereço `http://127.0.0.1:8765` com o processo Python em execução.
+- **HMAC inválido:** confira se AES_KEY e HMAC_KEY são idênticas às do firmware e se o ESP usa a implementação criptográfica da branch `main`.
+- **Nenhuma mensagem decifrada:** confirme que o ESP publica ciphertext de 16 bytes (Serial deve indicar TX com HMAC+AES).
+- **Comando sem ACK:** confira se o firmware executa `comandoProcessar` e se está com `CRIPTO_ACEITAR_CLARO` habilitado/desabilitado conforme a etapa de integração. O cliente Python publica comandos binários cifrados, não texto em claro.
+- **Nome rejeitado:** o pacote binário atual comporta até 6 caracteres ASCII.
 
 Encerre com Ctrl+C no terminal.
