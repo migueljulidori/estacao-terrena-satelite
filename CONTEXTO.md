@@ -38,7 +38,7 @@ Rede isolada da turma.
 1. **Autenticação** das mensagens (ex.: HMAC-SHA256 / mbedTLS)
 2. **Confidencialidade** (ex.: AES-CBC / mbedTLS)
 
-Cliente Python deverá verificar e rejeitar mensagens inválidas quando a camada criptográfica for implementada. Chaves: gerar, guardar e documentar distribuição. **HMAC/AES ainda não estão implementados nesta etapa de teste.**
+Cliente Python implementa o espelho do contrato criptográfico documentado em `docs/protocolo/README.md`: AES-128-CBC + HMAC-SHA256 truncado em 8 bytes, nos dois sentidos. As chaves são lidas de `mqtt_config.py` local, ignorado pelo Git. O contrato atual tem limitações conhecidas (IV estático derivado da chave, chaves atualmente expostas no firmware versionado e ausência de proteção anti-replay); não considerar isso uma garantia criptográfica final.
 
 ## Pipeline do firmware ESP32
 
@@ -46,9 +46,9 @@ Cliente Python deverá verificar e rejeitar mensagens inválidas quando a camada
 2. **MQTT** ✓ — connect + publish telemetria + subscribe comando
 3. **Gerar dados** ✓ — telemetria simulada (`dados_mod.h`)
 3b. **Comandos RX** ✓ — PING, STATUS e configuração de nome
-4. **Criptografia** ← próxima
-5. **Montar pacote final** — pendente
-6. **Publicar** — telemetria e ACK já publicados no tópico de telemetria
+4. **Criptografia no ESP** ✓ — HMAC truncado (8 B) + AES-128-CBC; cliente PC implementa espelho em `crypto_protocol.py`
+5. **Montar pacote** ✓ — bloco claro de 16 B (tipo|seq|dados|HMAC) cifrado para MQTT
+6. **Publicar** ✓ — ESP publica ciphertext; PC decifra e verifica antes de exibir
 
 ## Link budget (GEO)
 
@@ -71,7 +71,7 @@ Código ESP (Arduino) + cliente Python, fluxogramas, especificação do protocol
 | Tópico comando | `satellite/esp32-01/command` |
 | Broker | Mosquitto (IP configurado no firmware e no cliente PC; confirmar na LAN) |
 | Porta MQTT | TCP 1883 |
-| Autenticação / cripto | HMAC-SHA256 + AES-CBC (planejado; não implementado) |
+| Autenticação / cripto | HMAC-SHA256 truncado (8 B) + AES-128-CBC (contrato implementado; limitações registradas) |
 | Progresso firmware | Telemetria TX + comandos RX + ACK |
 | Cliente PC | Subscriber de telemetria/ACK + publisher de comandos + painel local |
 | Layout TX/RX | `docs/protocolo/README.md` |
