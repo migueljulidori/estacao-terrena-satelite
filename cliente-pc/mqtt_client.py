@@ -164,6 +164,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
             channel = queue.Queue(maxsize=30)
             with subscribers_lock:
                 subscribers.append(channel)
+            connected = mqtt_client is not None and mqtt_client.is_connected()
+            channel.put_nowait(json.dumps({
+                "event": "connection",
+                "connected": connected,
+                "message": "Conectado ao broker MQTT" if connected else "Aguardando conexão MQTT",
+            }, ensure_ascii=False))
             try:
                 self.wfile.write(b"event: ready\ndata: {}\n\n")
                 self.wfile.flush()
