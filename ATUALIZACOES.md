@@ -36,6 +36,20 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-13 — Correção da topologia e preparação do broker em PC Linux
+
+- **Autor(es):** equipe / implementação assistida
+- **Branch / PR:** `feature/mqtt-bidirecional` (PR #2)
+- **Áreas:** `README.md`, `CONTEXTO.md`, `estacao-terrena/README.md`, `cliente-pc/mqtt_config.example.py`
+- **O que mudou:**
+  - Corrigida a arquitetura: um PC Linux separado hospeda o Mosquitto; outro PC executa o cliente Python; o ESP32 é o terceiro cliente MQTT. Removidas referências incorretas à Raspberry Pi.
+  - Documentado o procedimento inicial de instalação/verificação do Mosquitto em Debian/Ubuntu e a necessidade de confirmar o IP LAN com `hostname -I`.
+  - Atualizado o exemplo de configuração Python para deixar explícito que o broker está no computador Linux.
+  - Registrado que o código está preparado para publish/subscribe nos dois sentidos, mas a instalação/configuração do broker e a validação física ainda estão pendentes.
+- **Por quê:** refletir a topologia real definida pela equipe e orientar a próxima etapa de configuração sem confundir o IP do ESP32 com o IP do broker.
+- **Como testar / impacto:** no computador Linux, executar os comandos de instalação e verificação em `estacao-terrena/README.md`; confirmar que Mosquitto está ativo e anotar o IPv4 LAN. Em seguida, configurar esse IP nos dois clientes e testar ESP32 → Python e Python → ESP32.
+
+
 ### 2026-11-13 — Alinhamento ao PI 3T atualizado: Raspberry Pi como broker
 
 - **Autor(es):** Elias / implementação assistida
