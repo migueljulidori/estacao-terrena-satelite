@@ -1,3 +1,17 @@
+### 2026-11-13 — Corrige ligação dos elementos da dashboard com o JavaScript
+
+- **Autor(es):** Manuela Lino
+- **Branch / PR:** `feature/cliente-pc-manuela`
+- **Áreas:** `cliente-pc/website/index.html`
+- **O que mudou:**
+  - Adicionados ao HTML os IDs esperados pelo JavaScript para estado da conexão, registro de payload e detalhes da mensagem.
+  - Incluídos os controles de telecomando que o JavaScript já inicializava, evitando que um elemento inexistente interrompesse a execução do script.
+  - Removidos valores demonstrativos da tabela e dos indicadores.
+- **Por quê:** o HTML não continha alguns elementos referenciados por `script.js`; isso provocava erro no navegador e impedia a atualização da dashboard.
+- **Como testar / impacto:** atualizar a página aberta em `http://127.0.0.1:8765`; com `mqtt_client.py` em execução, as mensagens recebidas devem preencher os indicadores e o registro.
+
+---
+
 ### 2026-11-13 — Cliente PC bidirecional e painel conectado ao MQTT
 
 - **Autor(es):** Manuela Lino
