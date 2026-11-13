@@ -24,6 +24,16 @@ cp mqtt_config.example.py mqtt_config.py
 
 Edite `mqtt_config.py` com o IP real da máquina que executa o Mosquitto, usuário e senha do cliente `groundstation`. Se já existir um `mqtt_config.py` antigo, acrescente `TOPIC_COMMAND`, `WEB_HOST` e `WEB_PORT` conforme o exemplo (ou atualize-o a partir do exemplo). Nunca versione credenciais reais.
 
+## Testes locais do decodificador e dos comandos
+
+Com o ambiente virtual ativo e as dependências instaladas:
+
+```bash
+python3 -m unittest -v test_mqtt_client.py
+```
+
+Esses testes verificam o decodificador dos pacotes de telemetria/ACK e a validação dos comandos, sem precisar conectar ao broker.
+
 ## Executar cliente e painel
 
 ```bash
