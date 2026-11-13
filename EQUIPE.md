@@ -9,7 +9,7 @@ Se ainda não tiver parte, **escolha uma linha livre**, edite este arquivo com s
 | Parte | Pasta | Responsável | Status |
 |-------|--------|-------------|--------|
 | Firmware satélite (ESP32) | `firmware-esp32/` | **Miguel Julidori** | Pipeline: Wi-Fi → MQTT → dados → cripto → pacote → publicar — **agora: MQTT (conectar)** |
-| Cliente PC (MQTT + verificação + painel web) | `cliente-pc/` | **Manuela Lino** | Responsável pela recepção MQTT, interpretação/verificação dos dados e interface web; integração em desenvolvimento |
+| Cliente PC (MQTT + verificação + painel web) | `cliente-pc/` | **Manuela Lino** | Cliente MQTT bidirecional: recebe telemetria/ACK, publica comandos de teste e atualiza o painel web |
 | Estação terrena (broker Mosquitto / SSH) | `estacao-terrena/` | _coloque seu nome_ | Aguardando responsável |
 | Protocolo (payload ≤ 16 bytes) | `docs/protocolo/` | _coloque seu nome_ (pode ser em dupla) | Aguardando responsável |
 | Link budget (potência, latência, RTT) | `docs/link-budget/` | **JH** | Aguardando responsável |
@@ -35,13 +35,13 @@ Detalhes: `firmware-esp32/README.md` (só avançar a próxima etapa quando a atu
 ### `cliente-pc/` (Manuela — em andamento)
 
 - Conectar ao broker MQTT da estação
-- Assinar o tópico de telemetria do satélite
+- Assinar `satellite/esp32-01/telemetry` para receber telemetria e ACK\n- Publicar `PING`, `STATUS` e `NOME=...` em `satellite/esp32-01/command`
 - Interpretar o payload de até 16 bytes
 - Verificar HMAC e/ou descriptografar AES, conforme o protocolo definido
 - Rejeitar mensagens inválidas e apresentar os dados recebidos
 - Manter o painel web de monitoramento e integrá-lo ao cliente de recepção
 
-O cliente Python e o painel web são componentes da mesma área. Comece validando a recepção de mensagens brutas; a integração de segurança e a atualização em tempo real do painel dependem da implementação do protocolo. Guia: `cliente-pc/README.md`
+O cliente Python e o painel web são componentes da mesma área. O teste inicial cobre os dois sentidos MQTT, a decodificação dos pacotes de 16 bytes e os ACKs; HMAC/AES permanecem pendentes. Guia: `cliente-pc/README.md`
 
 ### `estacao-terrena/` (precisa de responsável)
 
