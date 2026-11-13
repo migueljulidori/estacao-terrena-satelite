@@ -1,70 +1,74 @@
 import unittest
 
+from crypto_protocol import (
+    CryptoError, TYPE_ACK, TYPE_PING, TYPE_SET_NAME, TYPE_STATUS,
+    TYPE_TELEMETRY, open_packet, seal_packet,
+)
 from mqtt_client import decode_packet, validate_command
 
+AES = b"TEST-KEY-AES-001"
+HMAC = b"TEST-KEY-HMAC001"
 
-class PacketDecoderTests(unittest.TestCase):
-    def test_decodes_telemetry(self):
-        packet = bytearray(16)
-        packet[0:4] = bytes([1, 0x01, 7, 85])
-        packet[4:6] = (253).to_bytes(2, "little", signed=True)
-        packet[6:8] = (-45).to_bytes(2, "little", signed=True)
-        packet[8:10] = (812).to_bytes(2, "little")
-        packet[10:16] = b"Alpha\0\0"
 
-        result = decode_packet(bytes(packet))
+class CryptoProtocolTests(unittest.TestCase):
+    def test_encrypt_decrypt_round_trip(self):
+        data = bytes([87, 0xF5, 0x00, 0xB6, 0x00, 187])
+        encrypted = seal_packet(TYPE_TELEMETRY, 9, data, AES, HMAC)
+        self.assertEqual(len(encrypted), 16)
+        self.assertEqual(open_packet(encrypted, AES, HMAC), (TYPE_TELEMETRY, 9, data))
 
+    def test_rejects_modified_ciphertext(self):
+        encrypted = bytearray(seal_packet(TYPE_PING, 1, bytes(6), AES, HMAC))
+        encrypted[7] ^= 0x01
+        with self.assertRaises(CryptoError):
+            open_packet(bytes(encrypted), AES, HMAC)
+
+    def test_rejects_wrong_hmac_key(self):
+        encrypted = seal_packet(TYPE_STATUS, 2, bytes(6), AES, HMAC)
+        with self.assertRaises(CryptoError):
+            open_packet(encrypted, AES, b"OTHER-HMAC-KEY!!")
+
+    def test_rejects_wrong_length(self):
+        with self.assertRaises(CryptoError):
+            open_packet(b"short", AES, HMAC)
+
+    def test_rejects_invalid_key_length(self):
+        with self.assertRaises(CryptoError):
+            seal_packet(TYPE_PING, 0, bytes(6), b"short", HMAC)
+
+    def test_decoder_interprets_telemetry_after_authentication(self):
+        data = bytes([85]) + (253).to_bytes(2, "little", signed=True)
+        data += (-45).to_bytes(2, "little", signed=True) + bytes([203])
+        packet = seal_packet(TYPE_TELEMETRY, 7, data, AES, HMAC)
+        result = decode_packet(packet, AES, HMAC)
         self.assertTrue(result["valid"])
-        self.assertEqual(result["type"], "telemetry")
         self.assertEqual(result["battery"], 85)
         self.assertEqual(result["temp_internal"], 25.3)
         self.assertEqual(result["temp_external"], -4.5)
         self.assertEqual(result["solar"], 812)
-        self.assertEqual(result["name"], "Alpha")
 
-    def test_decodes_ack(self):
-        packet = bytearray(16)
-        packet[0:4] = bytes([1, 0x02, 0, 0x10])
-        packet[10:16] = b"SAT-01"
-
-        result = decode_packet(bytes(packet))
-
-        self.assertTrue(result["valid"])
-        self.assertEqual(result["type"], "ack")
-        self.assertEqual(result["command"], "PING")
-
-    def test_rejects_wrong_size(self):
-        result = decode_packet(b"short")
-        self.assertFalse(result["valid"])
-
-    def test_rejects_unknown_packet_type(self):
-        packet = bytearray(16)
-        packet[1] = 0x7F
-        result = decode_packet(bytes(packet))
-        self.assertFalse(result["valid"])
+    def test_decoder_rejects_invalid_hmac(self):
+        packet = seal_packet(TYPE_TELEMETRY, 7, bytes(6), AES, HMAC)
+        wrong_key_result = decode_packet(packet, AES, b"OTHER-HMAC-KEY!!")
+        self.assertFalse(wrong_key_result["valid"])
 
 
-class CommandValidationTests(unittest.TestCase):
-    def test_accepts_supported_commands(self):
-        for command in ("PING", "STATUS", "NOME=Alpha"):
-            payload, error = validate_command(command)
-            self.assertIsNone(error)
-            self.assertEqual(payload.decode("ascii"), command)
+class CommandTests(unittest.TestCase):
+    def test_supported_commands_are_converted_to_binary_protocol(self):
+        self.assertEqual(validate_command("PING"), (TYPE_PING, bytes(6), None))
+        self.assertEqual(validate_command("STATUS"), (TYPE_STATUS, bytes(6), None))
+        self.assertEqual(validate_command("NOME=Alpha"), (TYPE_SET_NAME, b"Alpha\0", None))
 
-    def test_rejects_unknown_command(self):
-        payload, error = validate_command("REBOOT")
-        self.assertIsNone(payload)
-        self.assertIsNotNone(error)
+    def test_name_limit_is_six_ascii_bytes(self):
+        kind, data, error = validate_command("NOME=ABCDEF")
+        self.assertEqual(kind, TYPE_SET_NAME)
+        self.assertEqual(data, b"ABCDEF")
+        self.assertIsNone(error)
+        self.assertIsNotNone(validate_command("NOME=ABCDEFG")[2])
 
-    def test_rejects_command_over_16_bytes(self):
-        payload, error = validate_command("NOME=123456789012")
-        self.assertIsNone(payload)
-        self.assertIsNotNone(error)
-
-    def test_rejects_empty_name(self):
-        payload, error = validate_command("NOME=")
-        self.assertIsNone(payload)
-        self.assertIsNotNone(error)
+    def test_rejects_non_ascii_and_unknown_commands(self):
+        self.assertIsNotNone(validate_command("NOME=Olá")[2])
+        self.assertIsNotNone(validate_command("REBOOT")[2])
 
 
 if __name__ == "__main__":
