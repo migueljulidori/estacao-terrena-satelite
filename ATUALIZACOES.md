@@ -1,3 +1,16 @@
+### 2026-11-13 — Documenta como abrir a dashboard conectada ao MQTT
+
+- **Autor(es):** Manuela Lino
+- **Branch / PR:** `feature/cliente-pc-manuela`
+- **Áreas:** `cliente-pc/README.md`
+- **O que mudou:**
+  - Esclarecido que o painel deve ser iniciado executando `python3 mqtt_client.py` dentro de `cliente-pc/`.
+  - Destacado que a dashboard deve ser acessada por `http://127.0.0.1:8765`, e não pelo caminho local `file://...`.
+- **Por quê:** a abertura direta do HTML não inicia o serviço local nem recebe os eventos enviados pelo cliente MQTT.
+- **Como testar / impacto:** iniciar o cliente Python, manter o terminal aberto e acessar o endereço HTTP local no navegador.
+
+---
+
 ### 2026-11-13 — Corrige ligação dos elementos da dashboard com o JavaScript
 
 - **Autor(es):** Manuela Lino
