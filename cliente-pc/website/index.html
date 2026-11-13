@@ -67,15 +67,15 @@
                 <article class="data-card">
                     <span class="card-icon">ϟ</span>
                     <p>ENERGIA</p>
-                    <strong id="battery">87%</strong>
+                    <strong id="battery">--%</strong>
                     <small>Nível de bateria</small>
-                    <div class="progress"><span style="width:87%"></span></div>
+                    <div class="progress"><span id="battery-bar" style="width:0%"></span></div>
                 </article>
 
                 <article class="data-card">
                     <span class="card-icon">♧</span>
                     <p>TEMPERATURA INTERNA</p>
-                    <strong id="temp-in">24,5 °C</strong>
+                    <strong id="temp-in">-- °C</strong>
                     <small>Temperatura</small>
                     <div class="progress"><span style="width:68%"></span></div>
                 </article>
@@ -83,7 +83,7 @@
                 <article class="data-card">
                     <span class="card-icon">♧</span>
                     <p>TEMPERATURA EXTERNA</p>
-                    <strong id="temp-out">18,2 °C</strong>
+                    <strong id="temp-out">-- °C</strong>
                     <small>Temperatura</small>
                     <div class="progress"><span style="width:72%"></span></div>
                 </article>
@@ -91,7 +91,7 @@
                 <article class="data-card">
                     <span class="card-icon">☼</span>
                     <p>IRRADIAÇÃO SOLAR</p>
-                    <strong id="solar">750</strong>
+                    <strong id="solar">--</strong>
                     <small>W/m²</small>
                     <div class="progress"><span style="width:78%"></span></div>
                 </article>
@@ -113,7 +113,7 @@
                 <div class="communication-item">
                     <span class="communication-icon">⌁</span>
                     <p>TÓPICO MQTT</p>
-                    <strong id="topic">satellite/telemetry</strong>
+                    <strong id="topic">satellite/esp32-01/telemetry</strong>
                 </div>
 
                 <div class="communication-item">
@@ -152,17 +152,17 @@
                     </tr>
                     <tr>
                         <td>Temp. interna</td>
-                        <td id="table-temp-in">24,5 °C</td>
+                        <td id="table-temp-in">-- °C</td>
                         <td><span class="ok">● OK</span></td>
                     </tr>
                     <tr>
                         <td>Temp. externa</td>
-                        <td id="table-temp-out">18,2 °C</td>
+                        <td id="table-temp-out">-- °C</td>
                         <td><span class="ok">● OK</span></td>
                     </tr>
                     <tr>
                         <td>Irradiação solar</td>
-                        <td id="table-solar">750 W/m²</td>
+                        <td id="table-solar">-- W/m²</td>
                         <td><span class="ok">● OK</span></td>
                     </tr>
                 </tbody>
