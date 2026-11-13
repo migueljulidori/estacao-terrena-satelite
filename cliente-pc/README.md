@@ -36,17 +36,21 @@ Esses testes verificam o decodificador dos pacotes de telemetria/ACK e a valida�
 
 ## Executar cliente e painel
 
+Na pasta `cliente-pc/`, com o ambiente virtual ativado e o arquivo `mqtt_config.py` configurado, execute:
+
 ```bash
 python3 mqtt_client.py
 ```
 
-Abra no navegador da própria máquina:
+Mantenha esse terminal aberto. O programa conecta ao broker MQTT, assina o tópico de telemetria e inicia o servidor web local.
+
+No Firefox, abra exatamente:
 
 ```
 http://127.0.0.1:8765
 ```
 
-Mantenha o terminal aberto. O servidor local entrega o painel e recebe os eventos MQTT; não abra o HTML diretamente como arquivo.
+**Importante:** não abra `website/index.html` pelo gerenciador de arquivos nem por um endereço `file://...`. Essa forma carrega apenas o HTML estático e não recebe os eventos MQTT. A dashboard conectada é servida pelo próprio `mqtt_client.py` no endereço HTTP acima.
 
 ## Testes de telecomando
 
