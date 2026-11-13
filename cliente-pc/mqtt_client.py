@@ -20,9 +20,7 @@ import paho.mqtt.client as mqtt
 try:
     import mqtt_config as config
 except ImportError:
-    print("Arquivo mqtt_config.py nao encontrado.")
-    print("Copie mqtt_config.example.py para mqtt_config.py e configure o broker.")
-    sys.exit(1)
+    config = None
 
 BASE_DIR = Path(__file__).resolve().parent
 WEBSITE_DIR = BASE_DIR / "website"
@@ -241,6 +239,10 @@ class DashboardServer(ThreadingHTTPServer):
 
 def main():
     global mqtt_client
+    if config is None:
+        print("Arquivo mqtt_config.py nao encontrado.")
+        print("Copie mqtt_config.example.py para mqtt_config.py e configure o broker.")
+        sys.exit(1)
     mqtt_client = mqtt.Client(
         mqtt.CallbackAPIVersion.VERSION2,
         client_id=config.CLIENT_ID,
