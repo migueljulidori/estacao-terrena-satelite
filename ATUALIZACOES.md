@@ -36,6 +36,15 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-13 — Alinhamento ao PI 3T atualizado: Raspberry Pi como broker
+
+- **Autor(es):** Elias / implementação assistida
+- **Branch / PR:** feature/mqtt-bidirecional (PR #2)
+- **Áreas:** estacao-terrena/README.md, CONTEXTO.md
+- **O que mudou:** Raspberry Pi definida explicitamente como host do Mosquitto; computador documentado como cliente Python; fluxos de telemetria e comando descritos conforme o requisito bidirecional.
+- **Por quê:** eliminar a ambiguidade entre broker e aplicação e alinhar o repositório ao novo documento.
+- **Como testar / impacto:** confirmar o IP LAN da Raspberry Pi e configurá-lo no firmware e em mqtt_config.py; testar telemetria e comando na rede isolada.
+
 ### 2026-11-12 — Comunicação MQTT bidirecional entre ESP32 e estação terrena
 
 - **Autor(es):** Elias / implementação assistida
