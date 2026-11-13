@@ -31,7 +31,7 @@ def on_connect(client, userdata, flags, reason_code, properties):
 
 def on_message(client, userdata, message):
     payload = message.payload
-    print("\\n" + "=" * 52)
+    print("\n" + "=" * 52)
     print(f"TELEMETRIA recebida | tópico: {message.topic}")
     print(f"Tamanho: {len(payload)} byte(s)")
     print(f"HEX: {payload.hex(' ')}")
@@ -94,11 +94,11 @@ def main():
         sys.exit(1)
 
     client.loop_start()
-    print("\\nEstação terrena pronta.")
+    print("\nEstação terrena pronta.")
     print("Recebendo telemetria continuamente.")
     print("Digite um comando para enviar ao ESP32 (ex.: PING ou STATUS).")
     print("O limite atual de 16 bytes é provisório e precisa ser confirmado.")
-    print("Digite /sair para encerrar.\\n")
+    print("Digite /sair para encerrar.\n")
 
     try:
         while True:
@@ -111,7 +111,7 @@ def main():
             if comando:
                 publicar_comando(client, comando)
     except KeyboardInterrupt:
-        print("\\nEncerrando aplicação...")
+        print("\nEncerrando aplicação...")
     finally:
         client.loop_stop()
         client.disconnect()
