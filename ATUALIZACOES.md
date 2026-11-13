@@ -1,3 +1,19 @@
+### 2026-11-13 — Implementa AES-128-CBC + HMAC no cliente PC
+
+- **Autor(es):** Manuela Lino
+- **Branch / PR:** `feature/cliente-pc-manuela`
+- **Áreas:** `cliente-pc/crypto_protocol.py`, `cliente-pc/mqtt_client.py`, `cliente-pc/test_mqtt_client.py`, `cliente-pc/requirements.txt`, `cliente-pc/mqtt_config.example.py`, `cliente-pc/website/script.js`, `cliente-pc/README.md`, `docs/protocolo/README.md`, `CONTEXTO.md`
+- **O que mudou:**
+  - Criado espelho Python do contrato da `main`: AES-128-CBC, IV derivado conforme firmware, HMAC-SHA256 truncado em 8 bytes e bloco claro de 16 bytes.
+  - Recepção MQTT agora decifra e valida HMAC antes de interpretar ou enviar os dados à dashboard; pacotes inválidos são rejeitados.
+  - Comandos PING, STATUS e SET_NOME são convertidos para o formato binário, autenticados, cifrados e publicados.
+  - Adicionadas dependência `cryptography`, configuração local das chaves e testes de criptografia, integridade, decodificação e comandos.
+  - Documentado que o contrato atual tem IV reutilizado, chaves expostas no firmware versionado e ausência de proteção anti-replay.
+- **Por quê:** tornar o cliente PC compatível com o firmware criptográfico já presente na branch `main`.
+- **Como testar / impacto:** em `cliente-pc/`, instalar novamente `pip install -r requirements.txt`, configurar `AES_KEY` e `HMAC_KEY` em `mqtt_config.py` com os mesmos valores do firmware, executar `python3 -m unittest -v test_mqtt_client.py` e depois `python3 mqtt_client.py`. O ESP32 precisa estar gravado com o firmware criptográfico da `main`.
+
+---
+
 ### 2026-11-13 — Documenta como abrir a dashboard conectada ao MQTT
 
 - **Autor(es):** Manuela Lino
