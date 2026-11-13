@@ -45,7 +45,7 @@ Cliente Python deve verificar e rejeitar mensagens inválidas. Chaves: gerar, gu
 1. **Wi-Fi** ✓ — IP `192.168.30.52`
 2. **MQTT** ✓ — connect + publish + subscribe comando
 3. **Gerar dados** ✓ — telemetria simulada (`dados_mod.h`)
-3b. **Comandos RX** ✓ — `comando_mod.h` (PING / STATUS / INT=n + binário)
+3b. **Comandos RX** ✓ — configuração de **nome** (`NOME=...`) + PING/STATUS
 4. **Criptografia** ← próxima
 5. **Montar pacote** — pendente
 6. **Publicar** — já usado; versão final com segurança depois

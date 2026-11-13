@@ -36,6 +36,15 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-13 — Comando de configuração: nome do satélite
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `comando_mod.h`, `dados_mod.h`, `docs/protocolo/`
+- **O que mudou:** RX principal `NOME=...` (e binário `0x13`); nome entra na telemetria (bytes 10–15)
+- **Por quê:** configuração que a estação envia ao satélite é o nome
+- **Como testar / impacto:** `mosquitto_pub ... -m 'NOME=Alpha'` → Serial + ACK + próximo TX com nome
+
 ### 2026-11-13 — Interpreta comandos no ESP (bidirecional PI 3T)
 
 - **Autor(es):** Miguel Julidori

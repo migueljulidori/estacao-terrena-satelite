@@ -3,7 +3,7 @@
 ## Bidirecional (PI 3T)
 
 - **TX:** `satellite/esp32-01/telemetry` (telemetria + ACK)
-- **RX:** `satellite/esp32-01/command` (PING / STATUS / INT=n)
+- **RX:** `satellite/esp32-01/command` — configuração principal: **nome** (`NOME=...`)
 
 ## Arquivos
 
@@ -22,8 +22,11 @@ mosquitto_pub -h IP_DO_BROKER -p 1883 -u USUARIO -P 'SENHA' \
   -t 'satellite/esp32-01/command' -m 'PING'
 ```
 
-Serial: `CMD texto PING` e `TX ACK`.  
-`STATUS` força telemetria; `INT=3` muda o período para 3 s.
+Para configurar o nome:
+```bash
+mosquitto_pub ... -t 'satellite/esp32-01/command' -m 'NOME=Alpha'
+```
+Serial: `Nome do satelite: Alpha` + ACK; telemetria passa a ecoar o nome.
 
 ## Configurar
 

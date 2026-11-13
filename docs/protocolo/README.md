@@ -1,48 +1,37 @@
-# Protocolo ESP — bidirecional (provisório)
+# Protocolo ESP — bidirecional
 
-## Tópicos
+## Resposta direta
 
-| Direção | Tópico |
-|---|---|
-| ESP → estação | `satellite/esp32-01/telemetry` |
-| Estação → ESP | `satellite/esp32-01/command` |
+**Sim:** o ESP **manda** (telemetria) e **recebe** (comandos), se estiver gravado com o firmware atual e inscrito em `command`.
 
-## Telemetria / ACK (ESP → estação) — 16 bytes
+| Direção | Tópico | O que faz |
+|---|---|---|
+| ESP → estação | `satellite/esp32-01/telemetry` | telemetria periódica (+ ACK) |
+| Estação → ESP | `satellite/esp32-01/command` | configuração, principalmente **nome** |
 
-| Offset | Campo | Notas |
-|--------|--------|------|
-| 0 | `sat_id` | `1` = SAT-01 |
-| 1 | `tipo` | `0x01` telemetria · `0x02` ACK |
-| 2 | `seq` | |
-| 3 | bateria % **ou** cmd de origem (se ACK) | |
-| 4–5 | temp. interna (°C×10, int16 LE) | telemetria |
-| 6–7 | temp. externa (°C×10, int16 LE) | telemetria |
-| 8–9 | solar (uint16 LE) | telemetria |
-| 10–15 | reservado | segurança depois |
+## Configuração principal: NOME
 
-## Comando (estação → ESP) — até 16 bytes
+Texto (teste):
 
-### Binário
+```bash
+mosquitto_pub -h IP -p 1883 -u USUARIO -P 'SENHA' \
+  -t 'satellite/esp32-01/command' -m 'NOME=Alpha'
+```
+
+- ESP guarda o nome (até 12 caracteres)
+- Responde ACK na telemetria
+- Próximas telemetrias levam até 6 chars do nome nos bytes 10–15
+- Serial: `Nome do satelite: Alpha`
+
+Outros textos úteis: `PING`, `STATUS`.
+
+## Telemetria (16 bytes)
 
 | Offset | Campo |
 |--------|--------|
-| 0 | `sat_id` (`1` ou `0` = todos) |
-| 1 | `cmd` |
-| 2 | `seq` |
-| 3 | `param0` |
-
-| `cmd` | Nome | Efeito |
-|-------|------|--------|
-| `0x10` | PING | publica ACK |
-| `0x11` | SET_INTERVAL | `param0` = segundos (1..60) do TX |
-| `0x12` | STATUS | força telemetria agora + ACK |
-
-### Texto (teste rápido)
-
-```bash
-mosquitto_pub -h IP -t 'satellite/esp32-01/command' -m 'PING'
-mosquitto_pub -h IP -t 'satellite/esp32-01/command' -m 'STATUS'
-mosquitto_pub -h IP -t 'satellite/esp32-01/command' -m 'INT=3'
-```
-
-(Use `-u` / `-P` se o broker exigir senha.)
+| 0 | sat_id |
+| 1 | tipo `0x01` telemetria / `0x02` ACK |
+| 2 | seq |
+| 3 | bateria % (ou cmd no ACK) |
+| 4–9 | temps + solar |
+| 10–15 | início do **nome** |
