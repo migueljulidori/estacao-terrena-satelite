@@ -1,69 +1,81 @@
-# Protocolo ESP — bidirecional (versão de teste)
+# Contrato criptográfico ESP32 ↔ estação terrena
 
-## Tópicos MQTT
+Esta branch espelha o contrato implementado em `main` por `firmware-esp32/satelite/cripto_mod.h`. Os dois lados precisam usar exatamente os mesmos parâmetros e chaves.
 
-| Direção | Tópico | Operação do ESP32 | Operação do PC |
-|---|---|---|---|
-| ESP → estação | `satellite/esp32-01/telemetry` | Publisher | Subscriber |
-| Estação → ESP | `satellite/esp32-01/command` | Subscriber | Publisher |
+## Transporte MQTT
 
-## Comandos de texto
-
-O firmware atual reconhece os seguintes comandos no tópico `satellite/esp32-01/command`:
-
-| Payload | Efeito esperado |
+| Direção | Tópico |
 |---|---|
-| `PING` | Responde ACK na telemetria. |
-| `STATUS` | Solicita telemetria imediata e responde ACK. |
-| `NOME=Alpha` | Atualiza o nome do satélite, responde ACK e força telemetria. |
+| ESP32 → PC (telemetria/ACK) | `satellite/esp32-01/telemetry` |
+| PC → ESP32 (comando) | `satellite/esp32-01/command` |
 
-Para o teste textual, o comando completo deve caber no limite atual de 16 bytes. Por isso, `NOME=` permite até 11 caracteres no payload de texto.
+## Formato protegido
 
-Exemplo com Mosquitto:
+O payload publicado no MQTT contém somente o ciphertext AES de 16 bytes.
 
-```bash
-mosquitto_pub -h IP_DO_BROKER -p 1883 -u groundstation -P 'SENHA' \
-  -t 'satellite/esp32-01/command' -m 'PING'
-```
+Antes da cifra, o bloco claro tem exatamente 16 bytes:
 
-## Pacote de telemetria — 16 bytes
+| Offset | Tamanho | Campo |
+|---|---:|---|
+| 0 | 1 B | Tipo |
+| 1 | 1 B | Sequência |
+| 2–7 | 6 B | Dados |
+| 8–15 | 8 B | HMAC truncado |
 
-O firmware publica no tópico `satellite/esp32-01/telemetry`.
+Cálculo:
+1. Concatenar `tipo || sequência || dados` (8 bytes).
+2. Calcular HMAC-SHA256 com a chave HMAC e guardar os 8 primeiros bytes.
+3. Anexar o HMAC ao bloco claro.
+4. Cifrar o bloco de 16 bytes com AES-128-CBC, sem padding adicional.
+5. O IV não é transmitido: `SHA256("SAT-IV" || chave_AES)[0:16]`.
 
-| Offset | Tamanho | Campo | Decodificação |
-|---|---:|---|---|
-| 0 | 1 B | sat_id | Identificador do satélite (atualmente 1) |
-| 1 | 1 B | tipo | `0x01` telemetria; `0x02` ACK |
-| 2 | 1 B | sequência | Contador de mensagens |
-| 3 | 1 B | bateria / comando | Bateria em % na telemetria; código do comando no ACK |
-| 4–5 | 2 B | temperatura interna | Inteiro com sinal, little-endian, dividido por 10 (°C) |
-| 6–7 | 2 B | temperatura externa | Inteiro com sinal, little-endian, dividido por 10 (°C) |
-| 8–9 | 2 B | irradiação solar | Inteiro sem sinal, little-endian |
-| 10–15 | 6 B | nome | Até 6 caracteres ASCII iniciais do nome |
+Na recepção, decifrar primeiro, recalcular o HMAC e comparar em tempo constante. Só interpretar os campos se a autenticação passar.
 
-Os campos de temperatura e irradiação são usados no pacote tipo `0x01`. No ACK tipo `0x02`, o byte 3 contém o código do comando confirmado e os bytes 10–15 carregam o início do nome atual.
+## Tipos de mensagem
 
-## Códigos de ACK
+| Tipo | Direção | Significado |
+|---|---|---|
+| `0x01` | ESP → PC | Telemetria |
+| `0x02` | ESP → PC | ACK |
+| `0x10` | PC → ESP | PING |
+| `0x12` | PC → ESP | STATUS |
+| `0x13` | PC → ESP | SET_NOME |
 
-| Código | Comando |
-|---|---|
-| `0x10` | PING |
-| `0x12` | STATUS |
-| `0x13` | SET_NOME |
+### Dados da telemetria
 
-## Teste ponta a ponta
+| Byte relativo aos dados | Campo | Codificação |
+|---|---|---|
+| 0 | Bateria | percentual |
+| 1–2 | Temperatura interna | int16 little-endian, valor em décimos de °C |
+| 3–4 | Temperatura externa | int16 little-endian, valor em décimos de °C |
+| 5 | Irradiação solar | valor real dividido por 4; PC multiplica por 4 |
 
-1. Gravar no ESP32 o firmware bidirecional atual.
-2. Confirmar que o ESP32 e o PC usam o mesmo broker Mosquitto.
-3. Confirmar no broker a ACL: usuário `satellite` publica telemetria e lê comandos; usuário `groundstation` lê telemetria e publica comandos.
-4. Executar o cliente PC e abrir o painel local.
-5. Enviar `PING`: conferir recepção no Serial do ESP32 e ACK no painel.
-6. Enviar `STATUS`: conferir ACK e telemetria imediata.
-7. Enviar `NOME=Alpha`: conferir nome no Serial, ACK e nome nas próximas telemetrias.
+### ACK
 
-## Segurança e limites
+- Dados[0]: tipo de comando confirmado (`0x10`, `0x12` ou `0x13`).
+- Dados[1–5]: até cinco bytes iniciais do nome do satélite.
 
-- O formato acima é provisório para os testes de comunicação.
-- HMAC/AES ainda não estão implementados.
-- Não considerar uma mensagem autenticada apenas porque chegou pelo broker.
-- O limite de 16 bytes é o limite do firmware de teste atual; confirmar o protocolo final com a equipe.
+### Comandos
+
+- PING: tipo `0x10`, seis bytes de dados zerados.
+- STATUS: tipo `0x12`, seis bytes de dados zerados.
+- SET_NOME: tipo `0x13`, nome ASCII de até seis bytes, completado com NUL.
+
+A sequência é um contador de 8 bits no PC. A proteção contra replay ainda não está implementada.
+
+## Implementação Python
+
+- `cliente-pc/crypto_protocol.py`: selagem e abertura do pacote.
+- `cliente-pc/mqtt_client.py`: decifra/verifica RX e cifra/assina TX.
+- `cliente-pc/mqtt_config.py`: chaves locais; arquivo ignorado pelo Git.
+- `cliente-pc/test_mqtt_client.py`: testes de cifra/decifra, HMAC, campos e comandos.
+
+## Limitações importantes do contrato atual
+
+Este formato foi reproduzido para interoperar com o firmware existente, mas não deve ser tratado como desenho criptográfico final:
+- IV derivado da chave e reutilizado em todas as mensagens; CBC requer IV imprevisível e único por mensagem.
+- As chaves do firmware em `main` estão em arquivo versionado e, portanto, são públicas para quem tem acesso ao repositório.
+- HMAC truncado a 8 bytes e sequência de 1 byte são escolhas atuais do projeto; não há janela anti-replay.
+- A troca desses parâmetros exige atualização simultânea do ESP32 e do cliente PC.
+
+Usar apenas na rede isolada de testes até a equipe definir uma versão segura do protocolo e substituir as chaves expostas.
