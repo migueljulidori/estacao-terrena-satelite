@@ -26,6 +26,10 @@ except ImportError:
 
 BASE_DIR = Path(__file__).resolve().parent
 WEBSITE_DIR = BASE_DIR / "website"
+TOPIC_COMMAND = getattr(config, "TOPIC_COMMAND", "satellite/esp32-01/command")
+WEB_HOST = getattr(config, "WEB_HOST", "127.0.0.1")
+WEB_PORT = getattr(config, "WEB_PORT", 8765)
+MAX_PAYLOAD_BYTES = getattr(config, "MAX_PAYLOAD_BYTES", 16)
 subscribers = []
 subscribers_lock = threading.Lock()
 mqtt_client = None
@@ -49,10 +53,10 @@ def broadcast(event):
 def decode_packet(payload):
     """Decodifica o layout provisório de 16 bytes de firmware-esp32."""
     if len(payload) != MAX_PAYLOAD_BYTES:
-        return {"valid": False, "error": f"Payload deve ter {config.MAX_PAYLOAD_BYTES} bytes."}
+        return {"valid": False, "error": f"Payload deve ter {MAX_PAYLOAD_BYTES} bytes."}
 
     sat_id, kind, sequence, value = payload[:4]
-    name = payload[10:16].split(b"\\0", 1)[0].decode("ascii", errors="replace")
+    name = payload[10:16].split(b"\0", 1)[0].decode("ascii", errors="replace")
 
     if kind == 0x01:
         temp_internal = int.from_bytes(payload[4:6], "little", signed=True) / 10
@@ -90,8 +94,8 @@ def validate_command(command):
         encoded = command.encode("ascii")
     except UnicodeEncodeError:
         return None, "Use somente caracteres ASCII no comando."
-    if not encoded or len(encoded) > config.MAX_PAYLOAD_BYTES:
-        return None, f"O comando deve ter entre 1 e {config.MAX_PAYLOAD_BYTES} bytes."
+    if not encoded or len(encoded) > MAX_PAYLOAD_BYTES:
+        return None, f"O comando deve ter entre 1 e {MAX_PAYLOAD_BYTES} bytes."
     upper = command.upper()
     if upper not in ("PING", "STATUS") and not upper.startswith("NOME="):
         return None, "Comandos aceitos: PING, STATUS ou NOME=nome."
@@ -122,13 +126,13 @@ def on_message(client, userdata, message):
     payload = message.payload
     print(f"RX {message.topic} | {len(payload)} byte(s) | {payload.hex(' ')}")
 
-    if len(payload) > config.MAX_PAYLOAD_BYTES:
+    if len(payload) > MAX_PAYLOAD_BYTES:
         event = {
             "event": "message",
             "valid": False,
             "topic": message.topic,
             "hex": payload.hex(" "),
-            "error": f"Mensagem rejeitada: excede {config.MAX_PAYLOAD_BYTES} bytes.",
+            "error": f"Mensagem rejeitada: excede {MAX_PAYLOAD_BYTES} bytes.",
         }
         broadcast(event)
         return
@@ -162,14 +166,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
             with subscribers_lock:
                 subscribers.append(channel)
             try:
-                self.wfile.write(b"event: ready\\ndata: {}\\n\\n")
+                self.wfile.write(b"event: ready\ndata: {}\n\n")
                 self.wfile.flush()
                 while True:
                     try:
                         data = channel.get(timeout=15)
-                        self.wfile.write(f"data: {data}\\n\\n".encode("utf-8"))
+                        self.wfile.write(f"data: {data}\n\n".encode("utf-8"))
                     except queue.Empty:
-                        self.wfile.write(b": keep-alive\\n\\n")
+                        self.wfile.write(b": keep-alive\n\n")
                     self.wfile.flush()
             except (BrokenPipeError, ConnectionResetError):
                 pass
@@ -219,9 +223,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
             if result.rc != mqtt.MQTT_ERR_SUCCESS:
                 self._json(503, {"ok": False, "error": "Falha ao publicar o comando MQTT."})
                 return
-            print(f"TX {config.TOPIC_COMMAND} | {payload.decode('ascii')}")
+            print(f"TX {TOPIC_COMMAND} | {payload.decode('ascii')}")
             broadcast({"event": "command", "command": payload.decode("ascii"), "sent": True})
-            self._json(200, {"ok": True, "topic": config.TOPIC_COMMAND, "command": payload.decode("ascii")})
+            self._json(200, {"ok": True, "topic": TOPIC_COMMAND, "command": payload.decode("ascii")})
         except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
             self._json(400, {"ok": False, "error": "JSON inválido."})
 
@@ -251,14 +255,14 @@ def main():
 
     mqtt_client.loop_start()
     server = ThreadingHTTPServer((WEB_HOST, WEB_PORT), DashboardHandler)
-    print(f"Painel: http://{config.WEB_HOST}:{config.WEB_PORT}")
-    print(f"Publisher de comandos: {config.TOPIC_COMMAND}")
+    print(f"Painel: http://{WEB_HOST}:{WEB_PORT}")
+    print(f"Publisher de comandos: {TOPIC_COMMAND}")
     print("Pressione Ctrl+C para encerrar.")
 
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\\nEncerrando...")
+        print("\nEncerrando...")
     finally:
         server.shutdown()
         server.server_close()
