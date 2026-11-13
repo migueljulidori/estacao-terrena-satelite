@@ -2,7 +2,7 @@
 #define MQTT_MOD_H
 
 #include <WiFi.h>
-#include <PubSubClient.h>
+#include <PubSubClient.h>\n#include <string.h>
 
 // IP da máquina com Mosquitto (não é o IP do ESP) — ajuste localmente.
 const char *mqtt_broker = "192.168.30.250";
