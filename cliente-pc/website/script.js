@@ -24,7 +24,7 @@
         $("table-solar").textContent = `${data.solar.toLocaleString("pt-BR")} W/m²`;
         $("battery-bar").style.width = `${Math.max(0, Math.min(100, data.battery))}%`;
 
-        $("payload-kind").textContent = `TELEMETRIA RECEBIDA — ${data.name}`;
+        $("payload-kind").textContent = `TELEMETRIA AUTENTICADA — ${data.name}`;
         $("payload-detail").textContent = `Satélite ${data.sat_id} | sequência ${data.sequence}`;
     }
 
@@ -43,7 +43,7 @@
             updateTelemetry(data);
         } else if (data.type === "ack") {
             $("payload-kind").textContent = "ACK RECEBIDO";
-            $("payload-detail").textContent = `Comando confirmado: ${data.command} | satélite: ${data.name}`;
+            $("payload-detail").textContent = `Comando confirmado: ${data.command} | satélite: ${data.name} | HMAC válido`;
         }
     }
 
