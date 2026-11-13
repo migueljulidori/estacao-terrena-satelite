@@ -1,3 +1,16 @@
+# Atualizações\n\n### 2026-11-13 — Organização da Parte 2 conforme enunciado atualizado
+
+- **Autor(es):** Elias / implementação assistida
+- **Branch / PR:** `feature/parte-2-organizacao`
+- **Áreas:** `CONTEXTO.md`, `EQUIPE.md`, `cliente-pc/`, `docs/protocolo/`, `docs/link-budget/`
+- **O que mudou:**
+  - Contexto alinhado aos requisitos atualizados: planos de operação e gerência, SSH, autenticação, confidencialidade, desafio hacking e entregáveis.
+  - Cliente Python preparado para receber telemetria e publicar comandos.
+  - Fórmulas GEO e parâmetros do link budget documentados.
+  - Limite de 16 bytes identificado como provisório, pois não está explícito no PDF atualizado.
+- **Por quê:** organizar a Parte 2 e separar requisitos oficiais de decisões ainda pendentes.
+- **Como testar / impacto:** cliente e firmware ainda precisam de validação física; link budget depende da escolha de frequência, taxa de dados e modulação.
+
 # Atualizações
 
 Histórico obrigatório de mudanças do projeto. Serve para controle e organização da equipe: qualquer pessoa deve conseguir entender **o que mudou**, **por quê** e **onde**, só lendo este arquivo.
