@@ -48,7 +48,7 @@ def broadcast(event):
 
 def decode_packet(payload):
     """Decodifica o layout provisório de 16 bytes de firmware-esp32."""
-    if len(payload) != config.MAX_PAYLOAD_BYTES:
+    if len(payload) != MAX_PAYLOAD_BYTES:
         return {"valid": False, "error": f"Payload deve ter {config.MAX_PAYLOAD_BYTES} bytes."}
 
     sat_id, kind, sequence, value = payload[:4]
@@ -215,7 +215,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             if mqtt_client is None or not mqtt_client.is_connected():
                 self._json(503, {"ok": False, "error": "Cliente MQTT não está conectado."})
                 return
-            result = mqtt_client.publish(config.TOPIC_COMMAND, payload, qos=0, retain=False)
+            result = mqtt_client.publish(TOPIC_COMMAND, payload, qos=0, retain=False)
             if result.rc != mqtt.MQTT_ERR_SUCCESS:
                 self._json(503, {"ok": False, "error": "Falha ao publicar o comando MQTT."})
                 return
@@ -250,7 +250,7 @@ def main():
         sys.exit(1)
 
     mqtt_client.loop_start()
-    server = ThreadingHTTPServer((config.WEB_HOST, config.WEB_PORT), DashboardHandler)
+    server = ThreadingHTTPServer((WEB_HOST, WEB_PORT), DashboardHandler)
     print(f"Painel: http://{config.WEB_HOST}:{config.WEB_PORT}")
     print(f"Publisher de comandos: {config.TOPIC_COMMAND}")
     print("Pressione Ctrl+C para encerrar.")
