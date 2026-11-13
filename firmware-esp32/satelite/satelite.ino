@@ -4,8 +4,9 @@
  *
  *   wifi_mod.h  — Wi-Fi
  *   mqtt_mod.h  — MQTT (publish + subscribe)
- *   dados_mod.h — envio de telemetria (teste)
+ *   dados_mod.h — gerar / enviar telemetria
  *
+ * Próximas: criptografia → montar pacote
  * Biblioteca: PubSubClient | Serial: 115200
  */
 
@@ -19,7 +20,7 @@ void setup() {
   Serial.begin(115200);
   delay(500);
 
-  Serial.println("Satelite ESP32 — bidirecional (TX telemetria / RX comando)");
+  Serial.println("Satelite ESP32 — telemetria + comando");
   wifiConectar();
   mqttConectar();
   ultimoEnvio = millis();
@@ -37,6 +38,6 @@ void loop() {
 
   if (millis() - ultimoEnvio >= 5000) {
     ultimoEnvio = millis();
-    dadosEnviarTeste();
+    dadosEnviar();
   }
 }

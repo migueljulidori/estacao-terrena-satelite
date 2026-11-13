@@ -2,8 +2,8 @@
 
 ## Papel (PI 3T)
 
-- **TX:** publica telemetria em `satellite/esp32-01/telemetry`
-- **RX:** assina comandos em `satellite/esp32-01/command`
+- **TX:** telemetria em `satellite/esp32-01/telemetry`
+- **RX:** comandos em `satellite/esp32-01/command`
 
 ## Arquivos
 
@@ -11,15 +11,28 @@
 |---------|--------|
 | `satelite.ino` | `setup` / `loop` |
 | `wifi_mod.h` | Wi-Fi |
-| `mqtt_mod.h` | MQTT (publish + subscribe) |
-| `dados_mod.h` | Envio de teste `TESTE-N` |
+| `mqtt_mod.h` | MQTT |
+| `dados_mod.h` | Gera e envia telemetria (16 bytes) |
+
+## Telemetria (layout provisório)
+
+| Bytes | Campo |
+|-------|--------|
+| 0 | id satélite |
+| 1 | tipo (0x01 telemetria) |
+| 2 | sequência |
+| 3 | bateria % |
+| 4–5 | temp. interna (°C×10, int16 LE) |
+| 6–7 | temp. externa (°C×10, int16 LE) |
+| 8–9 | irradiação (uint16 LE) |
+| 10–15 | reservado (segurança depois) |
+
+Valores **simulados** (sem sensores). A cada 5 s publica no broker.
 
 ## Configurar
 
-Em `mqtt_mod.h`: `mqtt_broker`, `mqtt_user`, `mqtt_senha`.
+`mqtt_mod.h`: `mqtt_broker`, `mqtt_user`, `mqtt_senha`
 
-## Teste (só ESP)
+## Próximo no ESP
 
-1. Grave o sketch (PubSubClient).
-2. Serial 115200: `TX ... TESTE-N`.
-3. Para testar RX, publique no broker no tópico `satellite/esp32-01/command` (ex.: `mosquitto_pub`) — o Serial mostra `RX comando`.
+Criptografia → montar pacote (HMAC/AES nos bytes reservados / payload final).

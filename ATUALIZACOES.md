@@ -36,6 +36,17 @@ Não misture várias mudanças não relacionadas na mesma entrada. Se for um aju
 
 ## Histórico
 
+### 2026-11-13 — Gera telemetria simulada no ESP (16 bytes)
+
+- **Autor(es):** Miguel Julidori
+- **Branch / PR:** _você faz o commit_
+- **Áreas:** `dados_mod.h`, `satelite.ino`, `docs/protocolo/`
+- **O que mudou:**
+  - Substitui `TESTE-N` por payload binário (id, tipo, seq, bateria, temps, solar)
+  - Documenta layout provisório em `docs/protocolo/README.md`
+- **Por quê:** etapa “gerar dados” do pipeline do satélite
+- **Como testar / impacto:** Serial mostra HEX da telemetria; broker recebe 16 bytes no tópico telemetry
+
 ### 2026-11-13 — Alinha firmware ESP ao PI 3T (enlace bidirecional)
 
 - **Autor(es):** Miguel Julidori

@@ -43,11 +43,11 @@ Cliente Python deve verificar e rejeitar mensagens inválidas. Chaves: gerar, gu
 ## Pipeline do firmware ESP32
 
 1. **Wi-Fi** ✓ — IP `192.168.30.52`
-2. **MQTT** ✓ — connect + publish telemetria + subscribe comando
-3. **Gerar dados** ← teste `TESTE-N` (telemetria real depois)
-4. **Criptografia** — pendente
-5. **Montar pacote** — pendente (`docs/protocolo/`)
-6. **Publicar** — já no teste; versão final com segurança depois
+2. **MQTT** ✓ — connect + publish + subscribe comando
+3. **Gerar dados** ✓ — telemetria simulada 16 B (`dados_mod.h`; ver `docs/protocolo/`)
+4. **Criptografia** ← próxima
+5. **Montar pacote** — pendente
+6. **Publicar** — já usado; versão final com segurança depois
 
 ## Link budget (GEO)
 
@@ -70,7 +70,8 @@ Código ESP (Arduino) + cliente Python, fluxogramas, especificação do protocol
 | Tópico comando | `satellite/esp32-01/command` |
 | Broker | Mosquitto (IP no ESP: `mqtt_broker`) |
 | Autenticação / cripto | HMAC-SHA256 + AES-CBC (planejado) |
-| Progresso firmware | Wi-Fi + MQTT TX/RX + teste TX |
+| Progresso firmware | Wi-Fi + MQTT TX/RX + telemetria simulada |
+| Layout telemetria | `docs/protocolo/README.md` (provisório) |
 
 ## Fontes
 
