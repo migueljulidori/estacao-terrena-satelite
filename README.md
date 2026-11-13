@@ -2,61 +2,27 @@
 
 Projeto Integrado – Telecomunicações (3º Trimestre 2026).
 
-Simulação de uma **estação terrena** que se comunica com **satélites** (nós ESP32) via MQTT, com dimensionamento de enlace (link budget) e mecanismos de segurança (autenticação HMAC e/ou criptografia AES).
+Simulação de uma estação terrena que se comunica com satélites (nós ESP32) por MQTT, com dimensionamento de enlace GEO e avaliação de segurança.
 
-## Para a equipe — comece por aqui
+## Arquitetura
+- **Raspberry Pi:** estação terrena que hospeda o broker MQTT Mosquitto.
+- **ESP32:** satélite simulado; publica telemetria e recebe comandos.
+- **Computador com Python:** aplicação cliente MQTT; recebe telemetria e publica comandos.
+- **Broker:** Mosquitto. O PI 3T atualizado não exige substituição do broker.
+- **IP do broker:** endereço LAN real da Raspberry Pi, ainda a confirmar. O IP 192.168.30.52 é do ESP32.
 
-Este repositório é compartilhado. Cada pessoa deve **assumir uma parte** e enviar atualizações pelo GitHub.
+## Status
+- Enlace MQTT bidirecional preparado no código: ESP32 publica telemetry e assina command; cliente Python assina telemetry e publica command.
+- Telemetria atual de teste: TESTE-N.
+- Comandos recebidos pelo ESP32 são exibidos no Monitor Serial; ainda não acionam hardware.
+- Próxima validação: configurar o IP real da Raspberry Pi no firmware e em cliente-pc/mqtt_config.py e testar os dois sentidos na rede isolada.
+- Próximas etapas do projeto: definir o protocolo de mensagens, implementar autenticação/integridade e confidencialidade, testar mensagens válidas/inválidas e concluir o link budget GEO.
 
-1. **Passo a passo Git:** [`CONTRIBUTING.md`](CONTRIBUTING.md)
-2. **Escolha sua parte:** [`EQUIPE.md`](EQUIPE.md)
-3. **Registre mudanças:** [`ATUALIZACOES.md`](ATUALIZACOES.md) (obrigatório em todo PR)
-
-## Status atual
-
-- **Enlace:** MQTT bidirecional — ESP publica telemetria e assina comandos; aplicação PC assina telemetria e publica comandos
-- **Miguel — ESP32:** Wi-Fi + MQTT bidirecional + telemetria de teste em [`firmware-esp32/`](firmware-esp32/)
-- **Broker / cliente PC:** `estacao-terrena/`, `cliente-pc/`
-- **Pendente:** definir protocolo final, telemetria real e segurança HMAC/AES — veja [`EQUIPE.md`](EQUIPE.md)
-
-## Estrutura
-
-```
-estacao-terrena-satelite/
-├── README.md
-├── EQUIPE.md
-├── CONTEXTO.md
-├── ATUALIZACOES.md
-├── CONTRIBUTING.md
-├── firmware-esp32/
-│   ├── README.md
-│   └── satelite/
-│       ├── satelite.ino
-│       ├── wifi_mod.h
-│       ├── mqtt_mod.h
-│       └── dados_mod.h
-├── cliente-pc/
-│   ├── README.md
-│   ├── mqtt_client.py
-│   ├── mqtt_config.example.py
-│   └── requirements.txt
-├── estacao-terrena/
-│   ├── README.md
-│   ├── mosquitto.conf.example
-│   └── acl.example
-└── docs/
-    ├── referencia/
-    ├── protocolo/
-    └── link-budget/
-```
-
-## Documentos principais
-
-- [`CONTEXTO.md`](CONTEXTO.md) — objetivos, cenário, protocolo e fases.
-- [`EQUIPE.md`](EQUIPE.md) — divisão de responsabilidades.
-- [`docs/referencia/Estacao_Terrena_Satelite_Fase1.pdf`](docs/referencia/Estacao_Terrena_Satelite_Fase1.pdf)
-- [`docs/referencia/Planejamento_sistema_ESP32_HMAC_AES.pdf`](docs/referencia/Planejamento_sistema_ESP32_HMAC_AES.pdf)
+## Para a equipe
+1. CONTRIBUTING.md — fluxo de contribuição.
+2. EQUIPE.md — divisão de responsabilidades.
+3. ATUALIZACOES.md — histórico de mudanças.
+4. CONTEXTO.md — arquitetura, requisitos e estado atual.
 
 ## Segurança
-
-Não envie credenciais Wi-Fi, MQTT, SSH, chaves HMAC/AES ou arquivos locais de configuração. Use os modelos `*.example` e mantenha os valores reais em arquivos ignorados pelo Git.
+Não envie credenciais Wi-Fi, MQTT, SSH ou chaves criptográficas ao Git. Use arquivos locais ignorados pelo Git e modelos de configuração *.example. Faça os testes somente na rede isolada e nos dispositivos autorizados.
