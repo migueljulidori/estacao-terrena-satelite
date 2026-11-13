@@ -18,7 +18,7 @@ Simular uma estação terrena que se comunica com satélites (nós ESP32) por en
 
 | Papel | Hardware / software | Função |
 |---|---|---|
-| Estação terrena | PC Linux ou Raspberry Pi | Broker MQTT Mosquitto e aplicação de operação |
+| Estação terrena | PC Linux dedicado ao broker | Broker MQTT Mosquitto e aplicação de operação |
 | Satélite | ESP32 | Publica telemetria e recebe comandos |
 | Aplicação PC | Computador com Python/Paho MQTT | Assina telemetria e publica comandos |
 | Gerência | SSH na LAN | Manutenção local, sem exposição à internet |
@@ -44,7 +44,7 @@ Conteúdo típico de telemetria (exemplos do enunciado): energia, temperatura in
 
 ## MQTT — enlace bidirecional
 
-Broker: **Mosquitto** em PC Linux ou Raspberry Pi, porta TCP `1883`. O IP da estação ainda deve ser definido (`mqtt_broker` no firmware e `mqtt_config.py` no PC).
+Broker: **Mosquitto** em PC Linux dedicado ao broker, porta TCP `1883`. O IP da estação ainda deve ser definido (`mqtt_broker` no firmware e `mqtt_config.py` no PC).
 
 O ESP32 publica telemetria e assina comandos; a aplicação PC assina telemetria e publica comandos.
 
@@ -114,7 +114,7 @@ Ver [`EQUIPE.md`](EQUIPE.md). Responsável pelo satélite (ESP32): **Miguel Juli
 | Número da equipe | _a definir_ |
 | Órbita / banda / antena | _a definir_ |
 | Conteúdo da telemetria | _a definir_ |
-| Broker MQTT | Mosquitto em PC Linux/Raspberry Pi |
+| Broker MQTT | Mosquitto em PC Linux separado |
 | IP do broker | _a definir_; no ESP: variável `mqtt_broker` no `.ino`; no PC: `mqtt_config.py` |
 | Porta MQTT | TCP 1883 (LAN isolada; sem TLS nesta etapa) |
 | Sentido do enlace | Bidirecional: ESP publica telemetria e assina comandos; PC faz o inverso |
@@ -141,3 +141,21 @@ O enlace deve ser bidirecional:
 O endereço 192.168.30.52 é o IP fixo do ESP32. O IP do broker deve ser o endereço LAN real da Raspberry Pi e precisa ser confirmado antes do teste. Esse mesmo IP deve ser configurado em mqtt_broker no firmware e em BROKER_HOST no arquivo local mqtt_config.py.
 
 Estado: o firmware da branch feature/mqtt-bidirecional foi preparado para publicar telemetria e receber comandos; o cliente Python foi preparado para receber telemetria e publicar comandos. A validação física dos dois sentidos ainda depende da configuração correta do IP do broker e de teste com Raspberry Pi, ESP32 e computador na rede isolada. Atualmente, o firmware apenas imprime comandos recebidos no Monitor Serial.
+
+## Atualização de arquitetura — 2026-11-13
+
+A arquitetura foi esclarecida: o broker Mosquitto roda em um computador Linux dedicado, separado do computador que executa a aplicação Python. Não existe Raspberry Pi nesta configuração.
+
+| Equipamento | Papel |
+|---|---|
+| Computador Linux 1 | Broker Mosquitto |
+| Computador 2 | Aplicação Python cliente MQTT |
+| ESP32 | Satélite simulado e cliente MQTT |
+
+Os três equipamentos devem estar na mesma LAN ou possuir rota entre si. O endereço do broker ainda precisa ser confirmado no computador Linux usando `hostname -I`; não usar o IP fixo do ESP32 (`192.168.30.52`) como IP do broker.
+
+### Estado do ambiente em 2026-11-13
+
+O código dos dois clientes está preparado para publish/subscribe bidirecional. A configuração/instalação do Mosquitto no computador Linux e o teste real de conectividade ainda estão pendentes de confirmação.
+
+Procedimento inicial documentado em `estacao-terrena/README.md`: instalar `mosquitto` e `mosquitto-clients` (Debian/Ubuntu), habilitar/iniciar o serviço, conferir `systemctl status mosquitto` e obter o IP LAN com `hostname -I`. Depois, configurar o mesmo IP no firmware e no arquivo local `cliente-pc/mqtt_config.py`.
